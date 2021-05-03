@@ -6,6 +6,7 @@
 #define SIMPLE_CPP_OPTION_PARSER_OPTIONPARSER_H
 
 #include "string"
+#include "vector"
 
 #include "implementation/OptionHolder.h"
 
@@ -22,6 +23,8 @@ public:
 private:
   int _argc_;
   char** _argv_;
+
+  std::vector<OptionHolder> _optionsList_;
 
 };
 
