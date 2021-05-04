@@ -1,2 +1,3 @@
-# simple-cpp-option-parser
+# Simple C++ Command Line Parser
+
 Simple C++ Option Parser
