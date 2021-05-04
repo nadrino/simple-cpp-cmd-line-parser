@@ -60,7 +60,7 @@ private:
 
 };
 
-namespace ParserGlobals{
+namespace CmdLineParserGlobals{
   static bool _fascistMode_ = DEFAULT_FASCIST_MODE;
 }
 
