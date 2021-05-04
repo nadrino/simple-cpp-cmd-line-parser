@@ -105,26 +105,54 @@ const OptionHolder &CmdLineParser::getOption(const std::string &optionName_) {
   return _optionsList_.at(optionIndex);
 }
 bool CmdLineParser::isOptionTriggered(const std::string &optionName_) {
-  if( this->getOption(optionName_).getNbExpectedVars() != 0 ){
+  const OptionHolder* optionPtr = &this->getOption(optionName_);
+  if( optionPtr->getNbExpectedVars() != 0 ){
     throw std::logic_error("Option \"" + optionName_ + "\" is not a trigger (nbExpectedVars != 0)");
   }
-  return this->getOption(optionName_).isTriggered();
+  return optionPtr->isTriggered();
 }
 bool CmdLineParser::isOptionSet(const std::string &optionName_, size_t index_){
-  if( this->getOption(optionName_).getNbExpectedVars() == 0 ) return isOptionTriggered(optionName_);
-  if( this->getOption(optionName_).getVarListSize() > index_ ) return true;
+  const OptionHolder* optionPtr = &this->getOption(optionName_);
+  if( optionPtr->getNbExpectedVars() == 0 ) return isOptionTriggered(optionName_);
+  if( optionPtr->getVarListSize() > index_ ) return true;
   return false;
 }
-template<class T> auto CmdLineParser::getOptionVal(const std::string &optionName_, size_t index_) -> T {
-  return this->getOption(optionName_).template getValue<T>(index_);
+size_t CmdLineParser::getNbValueSet(const std::string &optionName_){
+  return this->getOption(optionName_).getVarListSize();
+}
+
+template<class T> auto CmdLineParser::getOptionVal(const std::string &optionName_, int index_) -> T {
+  const OptionHolder* optionPtr = &this->getOption(optionName_);
+  if( index_ == -1 ){
+    if( optionPtr->getVarListSize() == 1 ){
+      // there is no ambiguity, index is 0
+      index_ = 0;
+    }
+    else{
+      throw std::logic_error(optionName_ + ": " + std::to_string(optionPtr->getVarListSize())
+                              + " values where set. You need to provide the index of the one you want.");
+    }
+  } // index_ == -1
+  return optionPtr->template getValue<T>(index_);
 }
 template<class T> auto CmdLineParser::getOptionValList(const std::string &optionName_) -> std::vector<T> {
   std::vector<T> outputList;
-  for( size_t iIndex = 0 ; iIndex < this->getOption(optionName_).getVarListSize() ; iIndex++ ){
-    outputList.template emplace_back(this->getOption(optionName_).template getValue<T>(iIndex));
+  const OptionHolder* optionPtr = &this->getOption(optionName_);
+  for( size_t iIndex = 0 ; iIndex < optionPtr->getVarListSize() ; iIndex++ ){
+    outputList.template emplace_back(optionPtr->template getValue<T>(iIndex));
   }
   return outputList;
 }
+template<class T> auto CmdLineParser::getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_) -> T{
+  try{
+    return this->template getOptionVal<T>(optionName_,index_);
+  }
+  catch ( std::logic_error& e ){
+    // Catch only logic errors. runtime error will still show
+    return defaultValue_;
+  }
+}
+
 std::string CmdLineParser::getConfigSummary(){
   std::stringstream ss;
 
@@ -143,6 +171,23 @@ std::string CmdLineParser::getConfigSummary(){
     ss << " }";
   }
 
+  return ss.str();
+}
+std::string CmdLineParser::getValueSummary(){
+  std::stringstream ss;
+  if( not _commandLineArgs_.empty() ){
+    ss << "Option values:";
+    for( const auto& option : _optionsList_ ){
+      ss << std::endl << "  " << option.getName() << ": { ";
+      for(auto it = option.getStrValuesList().begin(); it != option.getStrValuesList().end(); ++it) {
+        ss << "\"" << *it << "\"";
+        if(std::next(it) != option.getStrValuesList().end()) {
+          ss << ", ";
+        }
+      }
+      ss << " }";
+    }
+  }
   return ss.str();
 }
 

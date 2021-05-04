@@ -23,15 +23,21 @@ public:
 
   void parseCmdLine(int argc, char** argv);
 
+  // Probing options
   bool isOptionDefined(const std::string& name_);
   const OptionHolder& getOption(const std::string& optionName_);
   bool isOptionTriggered(const std::string &optionName_);
   bool isOptionSet(const std::string &optionName_, size_t index_ = 0);
-  template<class T> auto getOptionVal(const std::string& optionName_, size_t index_ = 0) -> T;
+  size_t getNbValueSet(const std::string &optionName_);
+
+  // Fectching Values
+  template<class T> auto getOptionVal(const std::string& optionName_, int index_ = -1) -> T;
   template<class T> auto getOptionValList(const std::string &optionName_) -> std::vector<T>;
+  template<class T> auto getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_ = -1) -> T;
 
+  //
   std::string getConfigSummary();
-
+  std::string getValueSummary();
 
 
 protected:

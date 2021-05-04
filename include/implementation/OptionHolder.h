@@ -53,22 +53,25 @@ public:
     if( _nbExpectedVars_ != -1 ) return ( _nbExpectedVars_ == _strValuesList_.size() );
     else return true;
   }
+  const std::vector<std::string> &getStrValuesList() const {
+    return _strValuesList_;
+  }
   size_t getVarListSize() const { return _strValuesList_.size(); }
   int getNbExpectedVars() const { return _nbExpectedVars_; }
   bool isTriggered() const { return _isTriggered_; }
   template<typename T> T getValue(size_t index_) const {
     if( index_ >= _strValuesList_.size() ){
       if( _nbExpectedVars_ >= 2 ){
-        throw std::runtime_error(_name_ + ": Value #" + std::to_string(index_) + " not set." );
+        throw std::logic_error(_name_ + ": Value #" + std::to_string(index_) + " not set." );
       }
       else if( _nbExpectedVars_ == 1 ){
-        throw std::runtime_error(_name_ + ": Value not set." );
+        throw std::logic_error(_name_ + ": Value not set." );
       }
       else if( _nbExpectedVars_ == 0){
-        throw std::runtime_error(_name_ + ": is a trigger option, not value can be fetch. Use isTriggered() instead." );
+        throw std::logic_error(_name_ + ": is a trigger option, not value can be fetch. Use isTriggered() instead." );
       }
       else{
-        throw std::runtime_error(_name_ + ": Value #" + std::to_string(index_) + " can't be fectch since var size is " + std::to_string(_strValuesList_.size()) );
+        throw std::logic_error(_name_ + ": Value #" + std::to_string(index_) + " can't be fectch since var size is " + std::to_string(_strValuesList_.size()) );
       }
     }
     T outputVar;
@@ -88,7 +91,7 @@ public:
   }
   template<> std::string getValue(size_t index_) const {
     if( index_ >= _strValuesList_.size() ){
-      throw std::runtime_error(_name_ + ": Could not fetch index value: " + std::to_string(index_) + " when var list size is " + std::to_string(_strValuesList_.size()) );
+      throw std::logic_error(_name_ + ": Could not fetch index value: " + std::to_string(index_) + " when var list size is " + std::to_string(_strValuesList_.size()) );
     }
     return _strValuesList_.at(index_);
   }
