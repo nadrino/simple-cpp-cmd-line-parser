@@ -13,7 +13,7 @@ int main(int argc, char** argv){
   // disable the fascistMode! This value can be set by default with DEFAULT_FASCIST_MODE macro
   // -> But we are not fascist here in this example so:
   CmdLineParser::setIsFascist(false);
-  // "GEORGES EST UN FACHISTE DE MERDE, UN FA-CHI-STE DE MERDE!!"
+  // "QU'EST-CE QUE J'AI A VOIR AVEC GEORGES? RIEN EN FAIT! GEORGES EST UN FACHISTE DE MERDE, UN FA-CHI-STE DE MERDE!!"
 
   CmdLineParser clParser;
 
