@@ -37,7 +37,7 @@ public:
       _strValuesList_.emplace_back(valueStr_);
     }
     else{
-      throw std::logic_error( _name_ + ": Can't set more values than the specified expected nb of var." );
+      throw std::logic_error( _name_ + ": Can't set more values since only " + std::to_string(_nbExpectedVars_) + " are expected." );
     }
   }
 
