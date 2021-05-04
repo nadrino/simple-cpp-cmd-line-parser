@@ -120,13 +120,13 @@ public:
     }
     ss << "}: " << _description_;
     if( _nbExpectedVars_ > 0 ){
-      ss << " (expected nb arg: " << _nbExpectedVars_ << ")";
+      ss << " (" << _nbExpectedVars_ << " value(s) expected)";
     }
     else if( _nbExpectedVars_ == 0 ){
       ss << " (trigger)";
     }
     else{
-      ss << " (infinite amount of args)";
+      ss << " (as many values as you provide)";
     }
 
     return ss.str();

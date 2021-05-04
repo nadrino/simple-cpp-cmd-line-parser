@@ -19,7 +19,8 @@ int main(int argc, char** argv){
   clParser.addOption("double-example", {"-d"}, "Specify double value");
   clParser.addOption("3-int", {"-iii"}, "Specify 3 int", 3); // exactly 3 values are expected
   clParser.addOption("multiple-strings", {"-ss"}, "Specify multiple args", -1); // infinite number of values
-  clParser.addOption("get", {"get"}, "Specify get values"); // this option is called without a dash
+  // this option is called without a dash (careful with those: if you want to provide an argument which have the same name, the option will override the argument)
+  clParser.addOption("get", {"get"}, "Specify get values");
 
   // Show configuration
   std::cout << "**** Show command line configuration:" << std::endl;
@@ -33,7 +34,6 @@ int main(int argc, char** argv){
   std::cout << "**** Show specified options:" << std::endl;
   std::cout << "Only the ones you called:" << std::endl;
   std::cout << clParser.getValueSummary() << std::endl;
-  std::cout << std::endl;
   std::cout << "All options:" << std::endl;
   std::cout << clParser.getValueSummary(true) << std::endl;
   std::cout << std::endl;
