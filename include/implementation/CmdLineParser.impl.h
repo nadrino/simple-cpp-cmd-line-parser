@@ -39,7 +39,7 @@ void CmdLineParser::addOption(const std::string &optionName_, const std::vector<
   _optionsList_.back().setNbExpectedVars(nbExpectedVars_);
 }
 void CmdLineParser::setIsFascist(bool isFascistParsing_){
-  _fascistMode_ = isFascistParsing_;
+  ParserGlobals::_fascistMode_ = isFascistParsing_;
 }
 
 void CmdLineParser::parseCmdLine(int argc, char** argv){
@@ -99,7 +99,7 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
         optionPtr->setNextVariableValue(argument);
       }
 
-      if( not _fascistMode_ and optionPtr->getNbExpectedVars() == optionPtr->getNbValues() ){
+      if( not ParserGlobals::_fascistMode_ and optionPtr->getNbExpectedVars() == optionPtr->getNbValues() ){
         // if an extra argument is provided but is not recognized, it will simply be ignored.
         // For a _fascistMode_: this is unacceptable!
         optionPtr = nullptr;
@@ -108,7 +108,7 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
       continue;
     }
 
-    if( _fascistMode_ ){
+    if( ParserGlobals::_fascistMode_ ){
       // WHAT? HOW DID YOU GET THERE? YOU HAVE NOTHING TO DO HERE!
       throw std::logic_error("Unrecognised option or value: " + argument + " (CmdLineParser is in _fascistMode_)");
     }

@@ -9,6 +9,12 @@
 
 int main(int argc, char** argv){
 
+  // If you want to allow some irresponsible user to provide extra unrecognised args, you can
+  // disable the fascistMode! This value can be set by default with DEFAULT_FASCIST_MODE macro
+  // -> But we are not fascist here in this example so:
+  CmdLineParser::setIsFascist(false);
+  // "GEORGES EST UN FACHISTE DE MERDE, UN FA-CHI-STE DE MERDE!!"
+
   CmdLineParser clParser;
 
   clParser.addTriggerOption("dry-run", {"--dry-run"},"Enable dry run");
@@ -28,12 +34,6 @@ int main(int argc, char** argv){
   // ^^^ The above example was for the screenshot :)
 
   clParser.reset();
-
-  // If you want to allow some irresponsible user to provide extra unrecognised args, you can
-  // disable the fascistMode! This value can be set by default with DEFAULT_FASCIST_MODE macro
-  // -> But we are not fascist here in this example so:
-  clParser.setIsFascist(false);
-  // "GEORGES EST UN FACHISTE DE MERDE, UN FA-CHI-STE DE MERDE!!"
 
   // Option configuration:
   clParser.addTriggerOption("trigger-example", {"--trigger"},"Set trigger");

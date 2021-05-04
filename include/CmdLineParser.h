@@ -16,6 +16,9 @@
 
 #include "implementation/OptionHolder.h"
 
+
+static bool _fascistMode_{DEFAULT_FASCIST_MODE};
+
 class CmdLineParser {
 
 public:
@@ -27,7 +30,7 @@ public:
   //! Pre-parser
   void addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
   void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "", int nbExpectedVars_ = 1);
-  void setIsFascist(bool isFascistParsing_); // if an extra/unrecognised arg is provided, you'll be punished with a logic error!
+  static void setIsFascist(bool isFascistParsing_); // if an extra/unrecognised arg is provided, you'll be punished with a logic error!
 
   //! Parser
   void parseCmdLine(int argc, char** argv);
@@ -53,12 +56,15 @@ protected:
 
 private:
   bool _isInitialized_{false};
-  bool _fascistMode_{DEFAULT_FASCIST_MODE};
   std::string _commandName_;
   std::vector<std::string> _commandLineArgs_;
   std::vector<OptionHolder> _optionsList_;
 
 };
+
+namespace ParserGlobals{
+  static bool _fascistMode_ = DEFAULT_FASCIST_MODE;
+}
 
 #include "implementation/CmdLineParser.impl.h"
 
