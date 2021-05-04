@@ -105,11 +105,7 @@ const OptionHolder &CmdLineParser::getOption(const std::string &optionName_) {
   return _optionsList_.at(optionIndex);
 }
 bool CmdLineParser::isOptionTriggered(const std::string &optionName_) {
-  const OptionHolder* optionPtr = &this->getOption(optionName_);
-  if( optionPtr->getNbExpectedVars() != 0 ){
-    throw std::logic_error("Option \"" + optionName_ + "\" is not a trigger (nbExpectedVars != 0)");
-  }
-  return optionPtr->isTriggered();
+  return this->getOption(optionName_).isTriggered();
 }
 bool CmdLineParser::isOptionSet(const std::string &optionName_, size_t index_){
   const OptionHolder* optionPtr = &this->getOption(optionName_);
@@ -156,9 +152,8 @@ template<class T> auto CmdLineParser::getOptionVal(const std::string& optionName
 std::string CmdLineParser::getConfigSummary(){
   std::stringstream ss;
 
-  ss << "Options:";
-  for( const auto& option : _optionsList_ ){
-    ss << std::endl << "  " << option.getSummary();
+  for( const auto& option : _optionsList_ ){if( not ss.str().empty() ) ss << std::endl;
+    ss << option.getSummary();
   }
   if( not _commandLineArgs_.empty() ){
     ss << std::endl << "Command Line Args: { ";
@@ -173,19 +168,41 @@ std::string CmdLineParser::getConfigSummary(){
 
   return ss.str();
 }
-std::string CmdLineParser::getValueSummary(){
+std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
   std::stringstream ss;
   if( not _commandLineArgs_.empty() ){
-    ss << "Option values:";
     for( const auto& option : _optionsList_ ){
-      ss << std::endl << "  " << option.getName() << ": { ";
-      for(auto it = option.getStrValuesList().begin(); it != option.getStrValuesList().end(); ++it) {
-        ss << "\"" << *it << "\"";
-        if(std::next(it) != option.getStrValuesList().end()) {
-          ss << ", ";
+      if( option.isTriggered() ){
+        if( not ss.str().empty() ) ss << std::endl;
+        ss << option.getName() << ": ";
+
+        if( option.getNbExpectedVars() == 0 ){
+          ss << "yes";
         }
+        else{
+          ss << "{ ";
+          for(auto it = option.getStrValuesList().begin(); it != option.getStrValuesList().end(); ++it) {
+            ss << "\"" << *it << "\"";
+            if(std::next(it) != option.getStrValuesList().end()) {
+              ss << ", ";
+            }
+          }
+          ss << " }";
+        }
+        if( showNonCalledVars_ ) ss << " -> called.";
       }
-      ss << " }";
+      else if( showNonCalledVars_ ){
+        if( not ss.str().empty() ) ss << std::endl;
+        ss << option.getName() << ": ";
+
+        if( option.getNbExpectedVars() == 0 ){
+          ss << "no";
+        }
+        else{
+          ss << "{}";
+        }
+        ss << " -> not called.";
+      }
     }
   }
   return ss.str();

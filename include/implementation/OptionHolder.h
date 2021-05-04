@@ -89,6 +89,19 @@ public:
 
     return outputVar;
   }
+  template<> double getValue(size_t index_) const {
+    // Override to bypass
+    if( index_ >= _strValuesList_.size() ){
+      throw std::logic_error(_name_ + ": Could not fetch index value: " + std::to_string(index_) + " when var list size is " + std::to_string(_strValuesList_.size()) );
+    }
+    return std::stod(_strValuesList_.at(index_));
+  }
+  template<> float getValue(size_t index_) const {
+    if( index_ >= _strValuesList_.size() ){
+      throw std::logic_error(_name_ + ": Could not fetch index value: " + std::to_string(index_) + " when var list size is " + std::to_string(_strValuesList_.size()) );
+    }
+    return std::stof(_strValuesList_.at(index_));
+  }
   template<> std::string getValue(size_t index_) const {
     if( index_ >= _strValuesList_.size() ){
       throw std::logic_error(_name_ + ": Could not fetch index value: " + std::to_string(index_) + " when var list size is " + std::to_string(_strValuesList_.size()) );
@@ -105,7 +118,17 @@ public:
         ss << ",";
       }
     }
-    ss << "}: " << _description_ << " (expected nb arg: " << _nbExpectedVars_ << ")";
+    ss << "}: " << _description_;
+    if( _nbExpectedVars_ > 0 ){
+      ss << " (expected nb arg: " << _nbExpectedVars_ << ")";
+    }
+    else if( _nbExpectedVars_ == 0 ){
+      ss << " (trigger)";
+    }
+    else{
+      ss << " (infinite amount of args)";
+    }
+
     return ss.str();
   }
 

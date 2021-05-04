@@ -19,7 +19,7 @@ public:
   virtual ~CmdLineParser();
 
   void addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
-  void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "", int nbExpectedVars_ = -1);
+  void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "", int nbExpectedVars_ = 1);
 
   void parseCmdLine(int argc, char** argv);
 
@@ -37,7 +37,7 @@ public:
 
   //
   std::string getConfigSummary();
-  std::string getValueSummary();
+  std::string getValueSummary(bool showNonCalledVars_ = false);
 
 
 protected:
