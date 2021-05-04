@@ -17,8 +17,6 @@
 #include "implementation/OptionHolder.h"
 
 
-static bool _fascistMode_{DEFAULT_FASCIST_MODE};
-
 class CmdLineParser {
 
 public:
