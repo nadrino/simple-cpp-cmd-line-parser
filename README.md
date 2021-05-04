@@ -1,3 +1,3 @@
-# Simple C++ Command Line Parser
+![](./resources/logo/logo.png)
 
-Simple C++ Option Parser
+Are you getting sick of 

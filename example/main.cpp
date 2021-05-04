@@ -10,6 +10,20 @@ int main(int argc, char** argv){
 
   CmdLineParser clParser;
 
+  clParser.addTriggerOption("dry-run", {"--dry-run"},"Enable dry run");
+  clParser.addOption("output-file", {"-o", "--output"},"Specify output file path");
+  clParser.addOption("count", {"-c"}, "Specify count");
+
+  clParser.parseCmdLine(argc, argv);
+
+  std::string outputFile = clParser.getOptionVal<std::string>("output-file", "");
+  int count              = clParser.getOptionVal<int>("count", 0);
+  bool isDryRun          = clParser.isOptionTriggered("dry-run");
+
+  if( isDryRun ){
+    std::cout << count << ": " << outputFile << std::endl;
+  }
+
   std::cout << std::endl;
 
   // Option configuration:
