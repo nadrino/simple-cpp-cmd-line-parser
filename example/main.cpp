@@ -29,10 +29,11 @@ int main(int argc, char** argv){
 
   clParser.reset();
 
-  // If you want to be sure that the user is not providing any extra unrecognised arg, set the FASCIST mode
-  // This value can be set by default with DEFAULT_FASCIST_MODE macro
-  // -> But we are not fascist here, so we let the following line commented out... ;D
-   clParser.setIsFascist(true);
+  // If you want to allow some irresponsible user to provide extra unrecognised args, you can
+  // disable the fascistMode! This value can be set by default with DEFAULT_FASCIST_MODE macro
+  // -> But we are not fascist here in this example so:
+  clParser.setIsFascist(false);
+  // "GEORGES EST UN FACHISTE DE MERDE, UN FA-CHI-STE DE MERDE!!"
 
   // Option configuration:
   clParser.addTriggerOption("trigger-example", {"--trigger"},"Set trigger");

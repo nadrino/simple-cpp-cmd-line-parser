@@ -8,7 +8,7 @@
 #define SIMPLE_CPP_CMD_LINE_PARSER_CMDLINEPARSER_H
 
 #ifndef DEFAULT_FASCIST_MODE
-#define DEFAULT_FASCIST_MODE 0
+#define DEFAULT_FASCIST_MODE 1
 #endif
 
 #include "string"
