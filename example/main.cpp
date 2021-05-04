@@ -25,7 +25,14 @@ int main(int argc, char** argv){
     std::cout << count << ": " << outputFile << std::endl;
   }
 
-  std::cout << std::endl;
+  // ^^^ The above example was for the screenshot :)
+
+  clParser.reset();
+
+  // If you want to be sure that the user is not providing any extra unrecognised arg, set the FASCIST mode
+  // This value can be set by default with DEFAULT_FASCIST_MODE macro
+  // -> But we are not fascist here, so we let the following line commented out... ;D
+   clParser.setIsFascist(true);
 
   // Option configuration:
   clParser.addTriggerOption("trigger-example", {"--trigger"},"Set trigger");
