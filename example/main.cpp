@@ -18,7 +18,7 @@ int main(int argc, char** argv){
   clParser.parseCmdLine(argc, argv);
 
   std::string outputFile = clParser.getOptionVal<std::string>("output-file", "");
-  int count              = clParser.getOptionVal<int>("count", 0);
+  int count              = clParser.getOptionVal<int>("count", 0, 0);
   bool isDryRun          = clParser.isOptionTriggered("dry-run");
 
   if( isDryRun ){
