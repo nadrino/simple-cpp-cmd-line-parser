@@ -1,5 +1,5 @@
 //
-// Created by Adrien BLANCHET on 03/05/2021.
+// Created by Nadrino on 03/05/2021.
 //
 
 #ifndef SIMPLE_CPP_OPTION_PARSER_OPTIONHOLDER_H
@@ -16,6 +16,7 @@ public:
   OptionHolder() = default;
   virtual ~OptionHolder() = default;
 
+  // Setters
   void setName(const std::string &name) {
     _name_ = name;
   }
@@ -40,6 +41,8 @@ public:
     }
   }
 
+  // Getters
+  bool isTriggered() const { return _isTriggered_; }
   const std::string &getName() const {
     return _name_;
   }
@@ -49,16 +52,20 @@ public:
   const std::vector<std::string> &getCmdLineCallStrList() const {
     return _cmdLineCallStrList_;
   }
-  bool isFullyFilled() const {
-    if( _nbExpectedVars_ != -1 ) return ( _nbExpectedVars_ == _strValuesList_.size() );
-    else return true;
-  }
-  const std::vector<std::string> &getStrValuesList() const {
+  int getNbExpectedVars() const { return _nbExpectedVars_; }
+  const std::vector<std::string> &getValuesList() const {
     return _strValuesList_;
   }
-  size_t getVarListSize() const { return _strValuesList_.size(); }
-  int getNbExpectedVars() const { return _nbExpectedVars_; }
-  bool isTriggered() const { return _isTriggered_; }
+
+  // Others
+  bool isFullyFilled() const {
+    return ( _nbExpectedVars_ == -1 ) or ( _nbExpectedVars_ == _strValuesList_.size() );
+  }
+  size_t getNbValues() const {
+    return _strValuesList_.size();
+  }
+
+  // Eval
   template<typename T> T getValue(size_t index_) const {
     if( index_ >= _strValuesList_.size() ){
       if( _nbExpectedVars_ >= 2 ){
@@ -109,6 +116,7 @@ public:
     return _strValuesList_.at(index_);
   }
 
+  // Misc
   std::string getSummary() const{
     std::stringstream ss;
     ss << _name_ << " {";

@@ -1,5 +1,5 @@
 //
-// Created by Adrien BLANCHET on 03/05/2021.
+// Created by Nadrino on 03/05/2021.
 //
 
 
@@ -30,12 +30,12 @@ public:
   bool isOptionSet(const std::string &optionName_, size_t index_ = 0);
   size_t getNbValueSet(const std::string &optionName_);
 
-  // Fectching Values
+  // Fetching Values
   template<class T> auto getOptionVal(const std::string& optionName_, int index_ = -1) -> T;
-  template<class T> auto getOptionValList(const std::string &optionName_) -> std::vector<T>;
   template<class T> auto getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_ = -1) -> T;
+  template<class T> auto getOptionValList(const std::string &optionName_) -> std::vector<T>;
 
-  //
+  // Misc
   std::string getConfigSummary();
   std::string getValueSummary(bool showNonCalledVars_ = false);
 
