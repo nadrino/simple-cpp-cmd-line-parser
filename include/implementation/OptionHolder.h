@@ -127,8 +127,11 @@ public:
       }
     }
     ss << "}: " << _description_;
-    if( _nbExpectedVars_ > 0 ){
-      ss << " (" << _nbExpectedVars_ << " value(s) expected)";
+    if( _nbExpectedVars_ > 1 ){
+      ss << " (" << _nbExpectedVars_ << " values expected)";
+    }
+    else if( _nbExpectedVars_ == 1 ){
+      ss << " (" << _nbExpectedVars_ << " value expected)";
     }
     else if( _nbExpectedVars_ == 0 ){
       ss << " (trigger)";
