@@ -2,9 +2,10 @@
 // Created by Nadrino on 03/05/2021.
 //
 
+#include "iostream"
+
 #include "CmdLineParser.h"
 
-#include "iostream"
 
 int main(int argc, char** argv){
 
