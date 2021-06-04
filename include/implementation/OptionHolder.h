@@ -11,6 +11,10 @@
 #include <iostream>
 
 namespace CmdLineParserUtils{
+
+  template<typename T>
+  struct identity { typedef T type; };
+
   class OptionHolder {
 
   public:
@@ -68,6 +72,38 @@ namespace CmdLineParserUtils{
 
     // Eval
     template<typename T> T getValue(size_t index_) const {
+      return getValue(index_, identity<T>());
+    }
+
+    // Misc
+    std::string getSummary() const{
+      std::stringstream ss;
+      ss << _name_ << " {";
+      for(auto it = _cmdLineCallStrList_.begin(); it != _cmdLineCallStrList_.end(); ++it) {
+        ss << *it;
+        if(std::next(it) != _cmdLineCallStrList_.end()) {
+          ss << ",";
+        }
+      }
+      ss << "}: " << _description_;
+      if( _nbExpectedVars_ > 1 ){
+        ss << " (" << _nbExpectedVars_ << " values expected)";
+      }
+      else if( _nbExpectedVars_ == 1 ){
+        ss << " (" << _nbExpectedVars_ << " value expected)";
+      }
+      else if( _nbExpectedVars_ == 0 ){
+        ss << " (trigger)";
+      }
+      else{
+        ss << " (as many values as you provide)";
+      }
+
+      return ss.str();
+    }
+
+  protected:
+    template<typename T> T getValue(size_t index_, identity<T>) const {
       if( index_ >= _strValuesList_.size() ){
         if( _nbExpectedVars_ >= 2 ){
           throw std::logic_error(_name_ + ": Value #" + std::to_string(index_) + " not set." );
@@ -97,51 +133,24 @@ namespace CmdLineParserUtils{
 
       return outputVar;
     }
-    template<> double getValue(size_t index_) const {
+    double getValue(size_t index_, identity<double>) const {
       // Override to bypass
       if( index_ >= _strValuesList_.size() ){
         throw std::logic_error(_name_ + ": Could not fetch index value: " + std::to_string(index_) + " when var list size is " + std::to_string(_strValuesList_.size()) );
       }
       return std::stod(_strValuesList_.at(index_));
     }
-    template<> float getValue(size_t index_) const {
+    float getValue(size_t index_, identity<float>) const {
       if( index_ >= _strValuesList_.size() ){
         throw std::logic_error(_name_ + ": Could not fetch index value: " + std::to_string(index_) + " when var list size is " + std::to_string(_strValuesList_.size()) );
       }
       return std::stof(_strValuesList_.at(index_));
     }
-    template<> std::string getValue(size_t index_) const {
+    std::string getValue(size_t index_, identity<std::string>) const {
       if( index_ >= _strValuesList_.size() ){
         throw std::logic_error(_name_ + ": Could not fetch index value: " + std::to_string(index_) + " when var list size is " + std::to_string(_strValuesList_.size()) );
       }
       return _strValuesList_.at(index_);
-    }
-
-    // Misc
-    std::string getSummary() const{
-      std::stringstream ss;
-      ss << _name_ << " {";
-      for(auto it = _cmdLineCallStrList_.begin(); it != _cmdLineCallStrList_.end(); ++it) {
-        ss << *it;
-        if(std::next(it) != _cmdLineCallStrList_.end()) {
-          ss << ",";
-        }
-      }
-      ss << "}: " << _description_;
-      if( _nbExpectedVars_ > 1 ){
-        ss << " (" << _nbExpectedVars_ << " values expected)";
-      }
-      else if( _nbExpectedVars_ == 1 ){
-        ss << " (" << _nbExpectedVars_ << " value expected)";
-      }
-      else if( _nbExpectedVars_ == 0 ){
-        ss << " (trigger)";
-      }
-      else{
-        ss << " (as many values as you provide)";
-      }
-
-      return ss.str();
     }
 
   private:
