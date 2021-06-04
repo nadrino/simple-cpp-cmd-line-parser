@@ -63,8 +63,8 @@ int main(int argc, char** argv){
 
   // Use values
   std::cout << "**** Get specific values:" << std::endl;
-  if( clParser.isOptionSet("output-file") ) std::cout << "output-file = " << clParser.getOptionVal<std::string>("output-file") << std::endl;
-  if( clParser.isOptionSet("int-example") ) std::cout << "int-example = " << clParser.getOptionVal<int>("int-example") << std::endl;
+  if( clParser.isOptionSet("output-file") ) std::cout    << "output-file = "    << clParser.getOptionVal<std::string>("output-file") << std::endl;
+  if( clParser.isOptionSet("int-example") ) std::cout    << "int-example = "    << clParser.getOptionVal<int>("int-example") << std::endl;
   if( clParser.isOptionSet("double-example") ) std::cout << "double-example = " << clParser.getOptionVal<double>("double-example") << std::endl;
   std::cout << std::endl;
 

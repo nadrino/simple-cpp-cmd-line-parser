@@ -53,8 +53,8 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
     else _commandLineArgs_.emplace_back(argv[iArg]);
   }
 
-  std::function<OptionHolder*(const std::string&)> findAssociatedOption = [this](const std::string& argStr_){
-    OptionHolder* optionPtr = nullptr;
+  std::function<CmdLineParserUtils::OptionHolder*(const std::string&)> findAssociatedOption = [this](const std::string& argStr_){
+    CmdLineParserUtils::OptionHolder* optionPtr = nullptr;
     for( auto& option : _optionsList_ ){
       bool thisArgIsOption = false;
       for( const auto& cmdLineCall : option.getCmdLineCallStrList() ){
@@ -70,10 +70,10 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
     return optionPtr;
   };
 
-  OptionHolder* optionPtr = nullptr;
+  CmdLineParserUtils::OptionHolder* optionPtr = nullptr;
   for( const auto & argument : _commandLineArgs_){
 
-    OptionHolder* nextOpt = findAssociatedOption(argument);
+    CmdLineParserUtils::OptionHolder* nextOpt = findAssociatedOption(argument);
 
     if( nextOpt != nullptr ){
 
@@ -125,7 +125,7 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
 bool CmdLineParser::isOptionDefined(const std::string& name_){
   return ( this->getOptionIndex(name_) != -1 );
 }
-const OptionHolder &CmdLineParser::getOption(const std::string &optionName_) {
+const CmdLineParserUtils::OptionHolder &CmdLineParser::getOption(const std::string &optionName_) {
   int optionIndex = this->getOptionIndex(optionName_);
   if( optionIndex == -1 ){
     throw std::logic_error("Option " + optionName_ + " is not defined");
@@ -197,7 +197,7 @@ bool CmdLineParser::isOptionTriggered(const std::string &optionName_) {
 }
 bool CmdLineParser::isOptionSet(const std::string &optionName_, size_t index_){
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
-  const OptionHolder* optionPtr = &this->getOption(optionName_);
+  const CmdLineParserUtils::OptionHolder* optionPtr = &this->getOption(optionName_);
   if( optionPtr->getNbExpectedVars() == 0 ) return isOptionTriggered(optionName_);
   if(optionPtr->getNbValues() > index_ ) return true;
   return false;
@@ -209,7 +209,7 @@ size_t CmdLineParser::getNbValueSet(const std::string &optionName_){
 
 template<class T> auto CmdLineParser::getOptionVal(const std::string &optionName_, int index_) -> T {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
-  const OptionHolder* optionPtr = &this->getOption(optionName_);
+  const CmdLineParserUtils::OptionHolder* optionPtr = &this->getOption(optionName_);
   if( index_ == -1 ){
     if(optionPtr->getNbValues() == 1 ){
       // there is no ambiguity, index is 0
@@ -235,7 +235,7 @@ template<class T> auto CmdLineParser::getOptionVal(const std::string& optionName
 template<class T> auto CmdLineParser::getOptionValList(const std::string &optionName_) -> std::vector<T> {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   std::vector<T> outputList;
-  const OptionHolder* optionPtr = &this->getOption(optionName_);
+  const CmdLineParserUtils::OptionHolder* optionPtr = &this->getOption(optionName_);
   for(size_t iIndex = 0 ; iIndex < optionPtr->getNbValues() ; iIndex++ ){
     outputList.template emplace_back(optionPtr->template getValue<T>(iIndex));
   }

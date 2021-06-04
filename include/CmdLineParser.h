@@ -16,7 +16,6 @@
 
 #include "implementation/OptionHolder.h"
 
-
 class CmdLineParser {
 
 public:
@@ -35,7 +34,7 @@ public:
 
   //! Pre/Post-parser
   bool isOptionDefined(const std::string& name_);
-  const OptionHolder& getOption(const std::string& optionName_);
+  const CmdLineParserUtils::OptionHolder& getOption(const std::string& optionName_);
   std::string getConfigSummary();
   std::string getValueSummary(bool showNonCalledVars_ = false);
 
@@ -56,7 +55,7 @@ private:
   bool _isInitialized_{false};
   std::string _commandName_;
   std::vector<std::string> _commandLineArgs_;
-  std::vector<OptionHolder> _optionsList_;
+  std::vector<CmdLineParserUtils::OptionHolder> _optionsList_;
 
 };
 
