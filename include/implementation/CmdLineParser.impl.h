@@ -6,10 +6,17 @@
 #ifndef SIMPLE_CPP_CMD_LINE_PARSER_CMDLINEPARSER_IMPL_H
 #define SIMPLE_CPP_CMD_LINE_PARSER_CMDLINEPARSER_IMPL_H
 
-#include <stdexcept>
-#include <functional>
 #include "iostream"
 #include "sstream"
+#include <stdexcept>
+#include <functional>
+
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+#include "yaml-cpp/yaml.h"
+#endif
+
+#include <CmdLineParser.h>
+
 
 //#include <CmdLineParser.h>
 
@@ -19,6 +26,9 @@ CmdLineParser::~CmdLineParser() = default;
 void CmdLineParser::reset(){
   _commandLineArgs_.clear();
   _optionsList_.clear();
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  _yamlConfigs_.clear();
+#endif
   _isInitialized_ = false;
 }
 
@@ -118,6 +128,10 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
   if( optionPtr != nullptr and not optionPtr->isFullyFilled() ){
     throw std::logic_error(optionPtr->getName() + ": missing values (" + std::to_string(optionPtr->getNbExpectedVars()) + " values were expected)");
   }
+
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  parseYamlConfigFiles();
+#endif
 
   _isInitialized_ = true;
 }
@@ -242,6 +256,38 @@ template<class T> auto CmdLineParser::getOptionValList(const std::string &option
   return outputList;
 }
 
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+void CmdLineParser::addYamlOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_) {
+  this->addOption(optionName_, commandLineCallStrList_, description_, 1);
+  _yamlConfigs_.emplace_back(optionName_);
+}
+std::string CmdLineParser::dumpConfigAsYamlStr() {
+  if( not _isInitialized_ ){
+    throw std::logic_error("Can't call dumpConfigAsYamlStr while parseCmdLine has not already been called");
+  }
+
+  YAML::Node yamlNode;
+  for( const auto& option : _optionsList_ ){
+    if( option.isTriggered() ){ // only taking into account explicit options
+
+      if( option.getNbValues() == 0 ){
+        yamlNode[option.getName()] = "true";
+      }
+      else if( option.getNbValues() == 1 ){
+        yamlNode[option.getName()] = option.getValue<std::string>(0);
+      }
+      else{
+        for( int iVal = 0 ; iVal < option.getNbValues() ; iVal++ ){
+          yamlNode[option.getName()].push_back(option.getValue<std::string>(iVal));
+        }
+      }
+    }
+  } // option
+
+  return YAML::Dump(yamlNode);
+}
+#endif
+
 
 int CmdLineParser::getOptionIndex(const std::string& name_){
   for( size_t iOption = 0 ; iOption < _optionsList_.size() ; iOption++ ){
@@ -251,6 +297,65 @@ int CmdLineParser::getOptionIndex(const std::string& name_){
   }
   return -1;
 }
+
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+void CmdLineParser::parseYamlConfigFiles(){
+
+  for( auto& yamlOptionName : _yamlConfigs_ ){
+    std::string yamlFilePath = this->getOptionVal<std::string>(yamlOptionName);
+    YAML::Node yamlNode = YAML::LoadFile(yamlFilePath);
+
+    for( auto& option: _optionsList_ ){
+
+      if( yamlOptionName == option.getName() and yamlNode[option.getName()] ){
+
+        if( option.isTriggered() ){
+          // nothing to take from yaml since it's already been triggered in cmd line
+          continue;
+        }
+
+        if( option.getNbExpectedVars() == 0 ){
+          // trigger case
+          if( yamlNode[option.getName()].IsScalar() ){
+            auto value = yamlNode[option.getName()].as<std::string>();
+            if( value == "1" or value == "true" or value == "yes" ){
+              option.setIsTriggered(true);
+            }
+          }
+          else{
+            std::cout << "yaml error: option \"" << option.getName()
+                      << "\" has to be either a single value; have: "
+                      << yamlNode[option.getName()].Type() << std::endl;
+            throw std::runtime_error("invalid yaml option");
+          }
+        }
+        else{
+          option.setIsTriggered(true);
+
+          if( yamlNode[option.getName()].IsScalar() ){
+            option.setNextVariableValue(yamlNode[option.getName()].as<std::string>());
+          }
+          else if( yamlNode[option.getName()].IsSequence() ){
+            for( const auto& yamlEntry : yamlNode[option.getName()] ){
+              option.setNextVariableValue(yamlEntry.as<std::string>());
+            }
+          }
+          else{
+            std::cout << "yaml error: option \"" << option.getName()
+                      << "\" has to be either a single value or a sequence; have: "
+                      << yamlNode[option.getName()].Type() << std::endl;
+            throw std::runtime_error("invalid yaml option");
+          }
+        }
+
+      } // yaml option
+
+    } // option
+
+  }
+
+}
+#endif
 
 
 #endif //SIMPLE_CPP_CMD_LINE_PARSER_CMDLINEPARSER_IMPL_H

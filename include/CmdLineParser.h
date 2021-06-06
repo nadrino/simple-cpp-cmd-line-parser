@@ -7,12 +7,17 @@
 #ifndef SIMPLE_CPP_CMD_LINE_PARSER_CMDLINEPARSER_H
 #define SIMPLE_CPP_CMD_LINE_PARSER_CMDLINEPARSER_H
 
-#ifndef DEFAULT_FASCIST_MODE
-#define DEFAULT_FASCIST_MODE 1
+#ifndef CMDLINEPARSER_DEFAULT_FASCIST_MODE
+#define CMDLINEPARSER_DEFAULT_FASCIST_MODE 1
+#endif
+
+#ifndef CMDLINEPARSER_YAML_CPP_ENABLED
+#define CMDLINEPARSER_YAML_CPP_ENABLED 0
 #endif
 
 #include "string"
 #include "vector"
+#include "map"
 
 #include "implementation/OptionHolder.h"
 
@@ -48,8 +53,17 @@ public:
   template<class T> auto getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_ = -1) -> T;
   template<class T> auto getOptionValList(const std::string &optionName_) -> std::vector<T>;
 
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  void addYamlOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
+  std::string dumpConfigAsYamlStr();
+#endif
+
 protected:
   int getOptionIndex(const std::string& name_);
+
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  void parseYamlConfigFiles();
+#endif
 
 private:
   bool _isInitialized_{false};
@@ -57,10 +71,14 @@ private:
   std::vector<std::string> _commandLineArgs_;
   std::vector<CmdLineParserUtils::OptionHolder> _optionsList_;
 
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  std::vector<std::string> _yamlConfigs_;
+#endif
+
 };
 
 namespace CmdLineParserGlobals{
-  static bool _fascistMode_ = DEFAULT_FASCIST_MODE;
+  static bool _fascistMode_ = CMDLINEPARSER_DEFAULT_FASCIST_MODE;
 }
 
 #include "implementation/CmdLineParser.impl.h"

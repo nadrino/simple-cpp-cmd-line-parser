@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv){
 
-  // If you want to allow some irresponsible user to provide extra unrecognised args, you can
+  // If you want to allow some (irresponsible!!!) user to provide extra unrecognised args, you can
   // disable the fascistMode! This value can be set by default with DEFAULT_FASCIST_MODE macro
   // -> But we are not fascist here in this example so:
   CmdLineParser::setIsFascist(false);
@@ -95,6 +95,11 @@ int main(int argc, char** argv){
     std::cout << "}" << std::endl;
   }
   std::cout << std::endl;
+
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  std::cout << "**** YAML dump:" << std::endl;
+  std::cout << clParser.dumpConfigAsYamlStr() << std::endl;
+#endif
 
   std::cout << "**** Have fun! :)" << std::endl;
 }
