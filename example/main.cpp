@@ -145,8 +145,6 @@ void doExample3(int argc, char** argv){
   clParser.addYamlOption("yaml-config", {"-y"},"Specify yaml config file path");
   clParser.addOption("yaml-test", {"-yt"},"An option we gonna provide through the yaml-config");
 
-  std::cout << clParser.getConfigSummary() << std::endl;
-
   clParser.parseCmdLine(argc, argv);
 
   if( clParser.isOptionTriggered("yaml-config") ){
@@ -165,6 +163,11 @@ void doExample3(int argc, char** argv){
       std::cout << "Loaded options: " << std::endl << clParserYamlOnly.getConfigSummary() << std::endl;
       std::cout << std::endl << "Loaded values: " << std::endl << clParserYamlOnly.getValueSummary() << std::endl;
     }
+
+  }
+  else{
+
+    std::cout << "-y was not provided." << std::endl;
 
   }
 

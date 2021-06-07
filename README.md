@@ -15,3 +15,21 @@ As an example is always better to show a summary of what it does, take a look
 at the `example/main.cpp` file:
 
 ![](./resources/screenshot/example.png)
+
+
+## Running the example
+
+You want to run the example? There you go!
+
+``` bash
+mkdir build
+cd build
+cmake ..
+make
+
+# Command example
+./OptionParserExample -o "test lol" -i 15 -d 1549846.654654355 -iii 13 15 16 -ss test.txt foo.bar
+
+# With Yaml example:
+./OptionParserExample -y ../resources/configExample.yaml --trigger
+```
