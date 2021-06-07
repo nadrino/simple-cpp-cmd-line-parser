@@ -78,14 +78,18 @@ namespace CmdLineParserUtils{
     // Misc
     std::string getSummary() const{
       std::stringstream ss;
-      ss << _name_ << " {";
-      for(auto it = _cmdLineCallStrList_.begin(); it != _cmdLineCallStrList_.end(); ++it) {
-        ss << *it;
-        if(std::next(it) != _cmdLineCallStrList_.end()) {
-          ss << ",";
+      ss << _name_;
+      if( not _cmdLineCallStrList_.empty() ){
+        ss << " {";
+        for(auto it = _cmdLineCallStrList_.begin(); it != _cmdLineCallStrList_.end(); ++it) {
+          ss << *it;
+          if(std::next(it) != _cmdLineCallStrList_.end()) {
+            ss << ",";
+          }
         }
+        ss << "}";
       }
-      ss << "}: " << _description_;
+      ss << ": " << _description_;
       if( _nbExpectedVars_ > 1 ){
         ss << " (" << _nbExpectedVars_ << " values expected)";
       }

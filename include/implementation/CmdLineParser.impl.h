@@ -27,6 +27,7 @@ void CmdLineParser::reset(){
   _commandLineArgs_.clear();
   _optionsList_.clear();
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  _enableYamlOptionAdding_ = false;
   _yamlConfigs_.clear();
 #endif
   _isInitialized_ = false;
@@ -63,27 +64,10 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
     else _commandLineArgs_.emplace_back(argv[iArg]);
   }
 
-  std::function<CmdLineParserUtils::OptionHolder*(const std::string&)> findAssociatedOption = [this](const std::string& argStr_){
-    CmdLineParserUtils::OptionHolder* optionPtr = nullptr;
-    for( auto& option : _optionsList_ ){
-      bool thisArgIsOption = false;
-      for( const auto& cmdLineCall : option.getCmdLineCallStrList() ){
-        if( cmdLineCall == argStr_ ){
-          thisArgIsOption = true;
-          break;
-        }
-      }
-      if( thisArgIsOption ){
-        optionPtr = &option;
-      }
-    }
-    return optionPtr;
-  };
-
   CmdLineParserUtils::OptionHolder* optionPtr = nullptr;
   for( const auto & argument : _commandLineArgs_){
 
-    CmdLineParserUtils::OptionHolder* nextOpt = findAssociatedOption(argument);
+    CmdLineParserUtils::OptionHolder* nextOpt = fetchOptionPtr(argument);
 
     if( nextOpt != nullptr ){
 
@@ -129,11 +113,13 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
     throw std::logic_error(optionPtr->getName() + ": missing values (" + std::to_string(optionPtr->getNbExpectedVars()) + " values were expected)");
   }
 
+  _isInitialized_ = true;
+
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  // will fill the options specified in the yaml file that were not provided in cmdline: i.e. cmdline options overrides yaml config
   parseYamlConfigFiles();
 #endif
 
-  _isInitialized_ = true;
 }
 
 bool CmdLineParser::isOptionDefined(const std::string& name_){
@@ -151,6 +137,13 @@ std::string CmdLineParser::getConfigSummary(){
 
   for( const auto& option : _optionsList_ ){if( not ss.str().empty() ) ss << std::endl;
     ss << option.getSummary();
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+    for( const auto& yamlOption : _yamlConfigs_ ){
+      if( option.getName() == yamlOption ){
+        ss << " ** YAML config option";
+      }
+    }
+#endif
   }
   if( not _commandLineArgs_.empty() ){
     ss << std::endl << "Command Line Args: { ";
@@ -167,14 +160,14 @@ std::string CmdLineParser::getConfigSummary(){
 }
 std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
   std::stringstream ss;
-  if( not _commandLineArgs_.empty() ){
+  if( _isInitialized_ ){
     for( const auto& option : _optionsList_ ){
       if( option.isTriggered() ){
         if( not ss.str().empty() ) ss << std::endl;
         ss << option.getName() << ": ";
 
         if( option.getNbExpectedVars() == 0 ){
-          ss << "yes";
+          ss << "true";
         }
         else{
           ss << "{ ";
@@ -193,7 +186,7 @@ std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
         ss << option.getName() << ": ";
 
         if( option.getNbExpectedVars() == 0 ){
-          ss << "no";
+          ss << "false";
         }
         else{
           ss << "{}";
@@ -261,6 +254,15 @@ void CmdLineParser::addYamlOption(const std::string &optionName_, const std::vec
   this->addOption(optionName_, commandLineCallStrList_, description_, 1);
   _yamlConfigs_.emplace_back(optionName_);
 }
+void CmdLineParser::parseYamlFile(const std::string &yamlFilePath_){
+  this->reset(); // rebuild from scratch
+  this->setEnableYamlOptionAdding(true);
+  this->addOption("CmdLineParser::parseYamlFile", {}, "Provided yaml file path", 1);
+  _yamlConfigs_.emplace_back("CmdLineParser::parseYamlFile");
+  this->fetchOptionByNamePtr("CmdLineParser::parseYamlFile")->setNextVariableValue(yamlFilePath_);
+  this->fetchOptionByNamePtr("CmdLineParser::parseYamlFile")->setIsTriggered(true);
+  this->parseCmdLine(0, nullptr);
+}
 std::string CmdLineParser::dumpConfigAsYamlStr() {
   if( not _isInitialized_ ){
     throw std::logic_error("Can't call dumpConfigAsYamlStr while parseCmdLine has not already been called");
@@ -286,9 +288,13 @@ std::string CmdLineParser::dumpConfigAsYamlStr() {
 
   return YAML::Dump(yamlNode);
 }
+void CmdLineParser::setEnableYamlOptionAdding(bool enableYamlOptionAdding_){
+  _enableYamlOptionAdding_ = enableYamlOptionAdding_;
+}
 #endif
 
 
+// Protected:
 int CmdLineParser::getOptionIndex(const std::string& name_){
   for( size_t iOption = 0 ; iOption < _optionsList_.size() ; iOption++ ){
     if( _optionsList_.at(iOption).getName() == name_ ){
@@ -297,17 +303,91 @@ int CmdLineParser::getOptionIndex(const std::string& name_){
   }
   return -1;
 }
+CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionPtr(const std::string& optionCallStr_){
+  CmdLineParserUtils::OptionHolder* optionPtr = nullptr;
+  for( auto& option : _optionsList_ ){
+    bool thisArgIsOption = false;
+    for( const auto& cmdLineCall : option.getCmdLineCallStrList() ){
+      if( cmdLineCall == optionCallStr_ ){
+        thisArgIsOption = true;
+        break;
+      }
+    }
+    if( thisArgIsOption ){
+      optionPtr = &option;
+    }
+  }
+  return optionPtr;
+}
+CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionByNamePtr(const std::string& optionName_){
+  CmdLineParserUtils::OptionHolder* optionPtr = nullptr;
+  for( auto& option : _optionsList_ ){
+    if(option.getName() == optionName_ ){
+      optionPtr = &option;
+      break;
+    }
+  }
+  return optionPtr;
+}
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
 void CmdLineParser::parseYamlConfigFiles(){
 
   for( auto& yamlOptionName : _yamlConfigs_ ){
+
+    if( not this->isOptionTriggered(yamlOptionName) ){
+      continue;
+    }
+
     std::string yamlFilePath = this->getOptionVal<std::string>(yamlOptionName);
     YAML::Node yamlNode = YAML::LoadFile(yamlFilePath);
 
+    if( _enableYamlOptionAdding_ ){
+
+      for( const auto& yamlEntry : yamlNode ){
+
+        if( not isOptionDefined( yamlEntry.first.as<std::string>() ) ){
+
+          // first check if this is a trigger option
+          bool isTriggerOption = false;
+          if( yamlEntry.second.IsScalar() ){
+            auto value = yamlEntry.second.as<std::string>();
+            if( value == "true" or value == "false" ){
+              // Caveat: don't support "int" triggers (bool = 0 or 1) since it could also be a int arg...
+              isTriggerOption = true;
+            }
+          }
+
+          _isInitialized_ = false;
+          if( isTriggerOption ){
+            this->addTriggerOption(
+                yamlEntry.first.as<std::string>(),
+                {},
+                "trigger option added with yaml file"
+            );
+          }
+          else{
+            this->addOption(
+                yamlEntry.first.as<std::string>(),
+                {},
+                "option added with yaml file",
+                -1
+            );
+          }
+          _isInitialized_ = true;
+        } // option not defined?
+      } // loop over yaml nodes
+    } // enable add option with yaml?
+
     for( auto& option: _optionsList_ ){
 
-      if( yamlOptionName == option.getName() and yamlNode[option.getName()] ){
+      if( yamlOptionName == option.getName() ){
+        // option is this yaml file
+        continue;
+      }
+
+      if( yamlNode[option.getName()] ){
+        // Option provided in yaml!
 
         if( option.isTriggered() ){
           // nothing to take from yaml since it's already been triggered in cmd line
@@ -318,15 +398,16 @@ void CmdLineParser::parseYamlConfigFiles(){
           // trigger case
           if( yamlNode[option.getName()].IsScalar() ){
             auto value = yamlNode[option.getName()].as<std::string>();
-            if( value == "1" or value == "true" or value == "yes" ){
+            if( value == "true" ){
               option.setIsTriggered(true);
             }
           }
           else{
-            std::cout << "yaml error: option \"" << option.getName()
+            std::stringstream ss;
+            ss << "yaml error: option \"" << option.getName()
                       << "\" has to be either a single value; have: "
                       << yamlNode[option.getName()].Type() << std::endl;
-            throw std::runtime_error("invalid yaml option");
+            throw std::runtime_error(ss.str());
           }
         }
         else{
@@ -341,10 +422,11 @@ void CmdLineParser::parseYamlConfigFiles(){
             }
           }
           else{
-            std::cout << "yaml error: option \"" << option.getName()
+            std::stringstream ss;
+            ss << "yaml error: option \"" << option.getName()
                       << "\" has to be either a single value or a sequence; have: "
                       << yamlNode[option.getName()].Type() << std::endl;
-            throw std::runtime_error("invalid yaml option");
+            throw std::runtime_error(ss.str());
           }
         }
 

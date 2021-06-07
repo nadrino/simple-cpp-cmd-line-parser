@@ -1,0 +1,13 @@
+# This is an example YAML file which can be read if the yaml-cpp lib has been enable (see CMakeLists.txt for example)
+# In the main.cpp, we set a "-y" option which provide the path to this file
+# These provided options will fill the clParser object, although any argument provided as cmd will override those ones.
+
+output-file: test foo.txt # "" are not needed in yaml: we don't care  multiple args are specified with "-"
+int-example: 25
+yaml-test: "test.lol" # you can still put "" if you wish tho
+yaml-only-option-example: "this option is not provided within the config setup in main.cpp"
+list-example:
+  - test1
+  - test2
+  - test3
+bool-example: true

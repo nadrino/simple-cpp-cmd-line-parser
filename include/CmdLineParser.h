@@ -55,11 +55,15 @@ public:
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
   void addYamlOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
+  void parseYamlFile(const std::string &yamlFilePath_);
   std::string dumpConfigAsYamlStr();
+  void setEnableYamlOptionAdding(bool enableYamlOptionAdding_);
 #endif
 
 protected:
   int getOptionIndex(const std::string& name_);
+  CmdLineParserUtils::OptionHolder* fetchOptionPtr(const std::string& optionCallStr_);
+  CmdLineParserUtils::OptionHolder* fetchOptionByNamePtr(const std::string& optionName_);
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
   void parseYamlConfigFiles();
@@ -72,6 +76,7 @@ private:
   std::vector<CmdLineParserUtils::OptionHolder> _optionsList_;
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  bool _enableYamlOptionAdding_{false};
   std::vector<std::string> _yamlConfigs_;
 #endif
 

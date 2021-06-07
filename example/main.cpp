@@ -6,6 +6,11 @@
 
 #include "CmdLineParser.h"
 
+void doExample1(int argc, char** argv);
+void doExample2(int argc, char** argv);
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+void doExample3(int argc, char** argv);
+#endif
 
 int main(int argc, char** argv){
 
@@ -15,11 +20,27 @@ int main(int argc, char** argv){
   CmdLineParser::setIsFascist(false);
   // "QU'EST-CE QUE J'AI A VOIR AVEC GEORGES? RIEN EN FAIT! GEORGES EST UN FACHISTE DE MERDE, UN FA-CHI-STE DE MERDE!!"
 
+  doExample1(argc, argv); // simple example
+  doExample2(argc, argv); // more complete example
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  doExample3(argc, argv); // example with yaml extension
+#endif
+
+  std::cout << "**** Have fun! :)" << std::endl;
+}
+
+
+void doExample1(int argc, char** argv){
+
+  std::cout << std::endl << "EXAMPLE 1" << std::endl;
+
   CmdLineParser clParser;
 
   clParser.addTriggerOption("dry-run", {"--dry-run"},"Enable dry run");
   clParser.addOption("output-file", {"-o", "--output"},"Specify output file path");
   clParser.addOption("count", {"-c"}, "Specify count");
+
+  std::cout << clParser.getConfigSummary() << std::endl;
 
   clParser.parseCmdLine(argc, argv);
 
@@ -33,7 +54,15 @@ int main(int argc, char** argv){
 
   // ^^^ The above example was for the screenshot :)
 
-  clParser.reset();
+  std::cout << std::endl;
+
+}
+
+void doExample2(int argc, char** argv){
+
+  std::cout << "EXAMPLE 2" << std::endl;
+
+  CmdLineParser clParser;
 
   // Option configuration:
   clParser.addTriggerOption("trigger-example", {"--trigger"},"Set trigger");
@@ -96,10 +125,50 @@ int main(int argc, char** argv){
   }
   std::cout << std::endl;
 
-#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
-  std::cout << "**** YAML dump:" << std::endl;
-  std::cout << clParser.dumpConfigAsYamlStr() << std::endl;
-#endif
-
-  std::cout << "**** Have fun! :)" << std::endl;
 }
+
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+void doExample3(int argc, char** argv){
+
+  std::cout << "EXAMPLE 3 (yaml extension)" << std::endl;
+
+  CmdLineParser clParser;
+
+  // Option configuration:
+  clParser.addTriggerOption("trigger-example", {"--trigger"},"Set trigger");
+  clParser.addOption("output-file", {"-o", "--output"},"Specify output file path");
+  clParser.addOption("int-example", {"-i"}, "Specify int value");
+  clParser.addOption("double-example", {"-d"}, "Specify double value");
+  clParser.addOption("3-int", {"-iii"}, "Specify 3 int", 3); // exactly 3 values are expected
+  clParser.addOption("multiple-strings", {"-ss"}, "Specify multiple args", -1); // infinite number of values
+
+  clParser.addYamlOption("yaml-config", {"-y"},"Specify yaml config file path");
+  clParser.addOption("yaml-test", {"-yt"},"An option we gonna provide through the yaml-config");
+
+  std::cout << clParser.getConfigSummary() << std::endl;
+
+  clParser.parseCmdLine(argc, argv);
+
+  if( clParser.isOptionTriggered("yaml-config") ){
+
+    std::cout << "**** YAML dump:" << std::endl;
+    std::cout << clParser.dumpConfigAsYamlStr() << std::endl;
+
+    // example to configure everything with a single yaml-file
+    std::cout << std::endl << "**** Example to configure everything with a single yaml-file:" << std::endl;
+    if( clParser.isOptionTriggered("yaml-config") ){
+      // inheriting the provided file path
+      std::string yamlFilePath = clParser.getOptionVal<std::string>("yaml-config");
+
+      CmdLineParser clParserYamlOnly;
+      clParserYamlOnly.parseYamlFile(yamlFilePath);
+      std::cout << "Loaded options: " << std::endl << clParserYamlOnly.getConfigSummary() << std::endl;
+      std::cout << std::endl << "Loaded values: " << std::endl << clParserYamlOnly.getValueSummary() << std::endl;
+    }
+
+  }
+
+  std::cout << std::endl;
+
+}
+#endif
