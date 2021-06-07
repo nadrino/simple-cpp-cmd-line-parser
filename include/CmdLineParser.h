@@ -11,10 +11,6 @@
 #define CMDLINEPARSER_DEFAULT_FASCIST_MODE 1
 #endif
 
-#ifndef CMDLINEPARSER_YAML_CPP_ENABLED
-#define CMDLINEPARSER_YAML_CPP_ENABLED 0
-#endif
-
 #include "string"
 #include "vector"
 #include "map"
