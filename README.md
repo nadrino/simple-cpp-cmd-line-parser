@@ -32,4 +32,7 @@ make
 
 # With Yaml example:
 ./OptionParserExample -y ../resources/configExample.yaml --trigger
+
+# Also works with a JSON file!
+./OptionParserExample -y ../resources/configExample.json
 ```

@@ -32,7 +32,7 @@ int main(int argc, char** argv){
 
 void doExample1(int argc, char** argv){
 
-  std::cout << std::endl << "EXAMPLE 1" << std::endl;
+  std::cout << "EXAMPLE 1" << std::endl;
 
   CmdLineParser clParser;
 
@@ -54,7 +54,7 @@ void doExample1(int argc, char** argv){
 
   // ^^^ The above example was for the screenshot :)
 
-  std::cout << std::endl;
+  std::cout << std::endl << std::endl;
 
 }
 
@@ -123,7 +123,7 @@ void doExample2(int argc, char** argv){
     }
     std::cout << "}" << std::endl;
   }
-  std::cout << std::endl;
+  std::cout << std::endl << std::endl;
 
 }
 
@@ -145,6 +145,8 @@ void doExample3(int argc, char** argv){
   clParser.addYamlOption("yaml-config", {"-y"},"Specify yaml config file path");
   clParser.addOption("yaml-test", {"-yt"},"An option we gonna provide through the yaml-config");
 
+  clParser.setEnableYamlOptionAdding(true); // allow yaml file to add extra options
+
   clParser.parseCmdLine(argc, argv);
 
   if( clParser.isOptionTriggered("yaml-config") ){
@@ -162,6 +164,9 @@ void doExample3(int argc, char** argv){
       clParserYamlOnly.parseYamlFile(yamlFilePath);
       std::cout << "Loaded options: " << std::endl << clParserYamlOnly.getConfigSummary() << std::endl;
       std::cout << std::endl << "Loaded values: " << std::endl << clParserYamlOnly.getValueSummary() << std::endl;
+
+      std::cout << std::endl << "Yaml dump: " << std::endl << clParserYamlOnly.dumpConfigAsYamlStr() << std::endl;
+      std::cout << std::endl << "Json dump: " << std::endl << clParserYamlOnly.dumpConfigAsJsonStr() << std::endl;
     }
 
   }
@@ -171,7 +176,7 @@ void doExample3(int argc, char** argv){
 
   }
 
-  std::cout << std::endl;
+  std::cout << std::endl << std::endl;
 
 }
 #endif

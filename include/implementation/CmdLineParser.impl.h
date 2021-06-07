@@ -30,9 +30,11 @@ void CmdLineParser::reset(){
   _enableYamlOptionAdding_ = false;
   _yamlConfigs_.clear();
 #endif
+  _commandName_ = "";
   _isInitialized_ = false;
 }
 
+//! Pre-parser
 void CmdLineParser::addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_) {
   this->addOption(optionName_, commandLineCallStrList_, description_, 0);
 }
@@ -53,6 +55,7 @@ void CmdLineParser::setIsFascist(bool isFascistParsing_){
   CmdLineParserGlobals::_fascistMode_ = isFascistParsing_;
 }
 
+//! Parser / Init
 void CmdLineParser::parseCmdLine(int argc, char** argv){
 
   if( _isInitialized_ ){
@@ -122,6 +125,7 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
 
 }
 
+//! Pre/Post-parser
 bool CmdLineParser::isOptionDefined(const std::string& name_){
   return ( this->getOptionIndex(name_) != -1 );
 }
@@ -198,6 +202,7 @@ std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
   return ss.str();
 }
 
+//! Post-parser
 bool CmdLineParser::isOptionTriggered(const std::string &optionName_) {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   return this->getOption(optionName_).isTriggered();
@@ -213,7 +218,11 @@ size_t CmdLineParser::getNbValueSet(const std::string &optionName_){
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   return this->getOption(optionName_).getNbValues();
 }
+const std::string &CmdLineParser::getCommandName() const {
+  return _commandName_;
+}
 
+// Fetching Values
 template<class T> auto CmdLineParser::getOptionVal(const std::string &optionName_, int index_) -> T {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   const CmdLineParserUtils::OptionHolder* optionPtr = &this->getOption(optionName_);
@@ -250,30 +259,43 @@ template<class T> auto CmdLineParser::getOptionValList(const std::string &option
 }
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+// Setup
 void CmdLineParser::addYamlOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_) {
   this->addOption(optionName_, commandLineCallStrList_, description_, 1);
   _yamlConfigs_.emplace_back(optionName_);
 }
+void CmdLineParser::setEnableYamlOptionAdding(bool enableYamlOptionAdding_){
+  _enableYamlOptionAdding_ = enableYamlOptionAdding_;
+}
+
+// Init
 void CmdLineParser::parseYamlFile(const std::string &yamlFilePath_){
+  if( _isInitialized_ ){
+    throw std::logic_error("CmdLineParser::parseYamlFile can't be called while already initialized.");
+  }
+
   this->reset(); // rebuild from scratch
   this->setEnableYamlOptionAdding(true);
+
   this->addOption("CmdLineParser::parseYamlFile", {}, "Provided yaml file path", 1);
   _yamlConfigs_.emplace_back("CmdLineParser::parseYamlFile");
   this->fetchOptionByNamePtr("CmdLineParser::parseYamlFile")->setNextVariableValue(yamlFilePath_);
   this->fetchOptionByNamePtr("CmdLineParser::parseYamlFile")->setIsTriggered(true);
-  this->parseCmdLine(0, nullptr);
-}
-std::string CmdLineParser::dumpConfigAsYamlStr() {
-  if( not _isInitialized_ ){
-    throw std::logic_error("Can't call dumpConfigAsYamlStr while parseCmdLine has not already been called");
-  }
 
+  this->parseCmdLine(0, nullptr);
+
+  _optionsList_.erase(_optionsList_.begin());
+  _yamlConfigs_.erase(_yamlConfigs_.begin());
+}
+
+// Misc
+YAML::Node CmdLineParser::dumpConfigAsYamlNode() {
   YAML::Node yamlNode;
   for( const auto& option : _optionsList_ ){
     if( option.isTriggered() ){ // only taking into account explicit options
 
       if( option.getNbValues() == 0 ){
-        yamlNode[option.getName()] = "true";
+        yamlNode[option.getName()] = true;
       }
       else if( option.getNbValues() == 1 ){
         yamlNode[option.getName()] = option.getValue<std::string>(0);
@@ -285,11 +307,15 @@ std::string CmdLineParser::dumpConfigAsYamlStr() {
       }
     }
   } // option
-
-  return YAML::Dump(yamlNode);
+  return yamlNode;
 }
-void CmdLineParser::setEnableYamlOptionAdding(bool enableYamlOptionAdding_){
-  _enableYamlOptionAdding_ = enableYamlOptionAdding_;
+std::string CmdLineParser::dumpConfigAsYamlStr() {
+  return YAML::Dump(this->dumpConfigAsYamlNode());
+}
+std::string CmdLineParser::dumpConfigAsJsonStr(){
+  YAML::Emitter emitter;
+  emitter << YAML::DoubleQuoted << YAML::Flow << YAML::BeginSeq << this->dumpConfigAsYamlNode();
+  return std::string(emitter.c_str() + 1); // +1: shift the array address to get rid of the heading "["
 }
 #endif
 

@@ -15,6 +15,10 @@
 #include "vector"
 #include "map"
 
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+#include "yaml-cpp/yaml.h"
+#endif
+
 #include "implementation/OptionHolder.h"
 
 class CmdLineParser {
@@ -30,7 +34,7 @@ public:
   void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "", int nbExpectedVars_ = 1);
   static void setIsFascist(bool isFascistParsing_); // if an extra/unrecognised arg is provided, you'll be punished with a logic error!
 
-  //! Parser
+  //! Parser / Init
   void parseCmdLine(int argc, char** argv);
 
   //! Pre/Post-parser
@@ -43,6 +47,7 @@ public:
   bool isOptionTriggered(const std::string &optionName_);
   bool isOptionSet(const std::string &optionName_, size_t index_ = 0);
   size_t getNbValueSet(const std::string &optionName_);
+  const std::string &getCommandName() const;
 
   // Fetching Values
   template<class T> auto getOptionVal(const std::string& optionName_, int index_ = -1) -> T;
@@ -50,10 +55,17 @@ public:
   template<class T> auto getOptionValList(const std::string &optionName_) -> std::vector<T>;
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+  // Setup
   void addYamlOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
+  void setEnableYamlOptionAdding(bool enableYamlOptionAdding_); // allow non-set options to be defined by YAML file while reading it
+
+  // Init
   void parseYamlFile(const std::string &yamlFilePath_);
+
+  // Misc
+  YAML::Node dumpConfigAsYamlNode();
   std::string dumpConfigAsYamlStr();
-  void setEnableYamlOptionAdding(bool enableYamlOptionAdding_);
+  std::string dumpConfigAsJsonStr();
 #endif
 
 protected:

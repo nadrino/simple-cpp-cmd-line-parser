@@ -1,0 +1,12 @@
+{
+  "output-file": "test foo.txt",
+  "int-example": "25",
+  "yaml-test": "test.lol",
+  "yaml-only-option-example": "this option is not provided within the config setup in main.cpp",
+  "list-example": [
+    "test1",
+    "test2",
+    "test3"
+  ],
+  "bool-example": "true"
+}
