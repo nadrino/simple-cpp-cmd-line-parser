@@ -93,8 +93,6 @@ void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
             // loop over each option in the argument
             std::string optionWord = (*argIt).substr(1);
             for (const auto& shortArg :  optionWord) {
-                std::cout << "-" + std::string(&shortArg).substr(0, 1) << std::endl;
-                std::cout << bool("-" + std::string(&shortArg).substr(0, 1) == "-i");
                 auto nextOpt = fetchOptionPtr("-" + std::string(&shortArg).substr(0, 1));
                 if (nextOpt == nullptr) {
                     if (CmdLineParserGlobals::_fascistMode_)
@@ -124,14 +122,24 @@ void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
             }
         } else {
             // long option was found
-            auto nextOpt = fetchOptionPtr((*argIt));
+            auto eqPos = (*argIt).find('=');
+            auto searchPattern = (*argIt);
+            if (eqPos != std::string::npos)
+                searchPattern = searchPattern.substr(0, eqPos);
+            auto nextOpt = fetchOptionPtr(searchPattern);
             if (nextOpt == nullptr) {
                 if (CmdLineParserGlobals::_fascistMode_)
                     throw std::logic_error("Unrecognised option or value: " + (*argIt));
                 continue;
+            }
             nextOpt->setIsTriggered(true);
             if (nextOpt->getNbExpectedVars() == 0)
                 continue;
+            // separated with '='
+            if (eqPos != std::string::npos) {
+                nextOpt->setNextVariableValue((*argIt).substr(eqPos+1));
+                continue;
+            }
             if (argIt == _commandLineArgs_.end() - 1) {
                 throw std::logic_error("Option" + (*argIt) + "required a parameter, but nothing was found");
             }
