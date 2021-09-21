@@ -119,16 +119,21 @@ void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
                     // take the next command line argument as a value
                     nextOpt->setNextVariableValue(*(argIt + 1));
                     ++argIt;
+                    continue;
                 }
             }
         } else {
             // long option was found
-            auto nextOpt = fetchOptionPtr((*argIt).substr(0, 2));
+            auto nextOpt = fetchOptionPtr((*argIt));
+            if (nextOpt == nullptr) {
+                if (CmdLineParserGlobals::_fascistMode_)
+                    throw std::logic_error("Unrecognised option or value: " + (*argIt));
+                continue;
             nextOpt->setIsTriggered(true);
             if (nextOpt->getNbExpectedVars() == 0)
                 continue;
             if (argIt == _commandLineArgs_.end() - 1) {
-                throw std::logic_error("Option" + (*argIt).substr(0, 2) + "required a parameter, but nothing was found");
+                throw std::logic_error("Option" + (*argIt) + "required a parameter, but nothing was found");
             }
             nextOpt->setNextVariableValue(*(argIt + 1));
             ++argIt;
