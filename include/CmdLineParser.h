@@ -29,29 +29,22 @@ class CmdLineParser {
 
 public:
   CmdLineParser();
+  CmdLineParser(int argc, char** argv);
   virtual ~CmdLineParser();
 
   void reset();
-
-  /**
-   * Check the legality of the arguments with the common Unix / GNU style.
-   * Options are expected to start with dash '-'.
-   * One character option starts with 1 dash, long options start with two dashes
-   * @param optionName_ the option itself including dashes
-   * @param nbExpectedVars_ number of expected vars
-   * @return Whether the option is suitable with Unix GNU standard
-   */
-  static bool checkOptionGNU(const std::vector<std::string>& optionName_, const int& nbExpectedVars_);
+  void resetCmdLineArgs();
 
   //! Pre-parser
+  void addCmdLineArgs(int argc, char** argv);
   void addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
   void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "", int nbExpectedVars_ = 1);
   static void setIsFascist(bool isFascistParsing_); // if an extra/unrecognised arg is provided, you'll be punished with a logic error!
-  static void setIsUnixGNU(bool var);
+  static void setIsUnixGnuMode(bool isUnixGnuMode_);
 
   //! Parser / Init
-  void parseCmdLine(int argc, char** argv);
-  void parseGNUcmdLine(int argc, char** argv);
+  void parseCmdLine(int argc = -1, char** argv = nullptr);
+  void parseGNUcmdLine(int argc = -1, char** argv = nullptr);
 
   //! Pre/Post-parser
   bool isOptionDefined(const std::string& name_);
@@ -83,6 +76,16 @@ public:
   std::string dumpConfigAsYamlStr();
   std::string dumpConfigAsJsonStr();
 #endif
+
+  /**
+   * Check the legality of the arguments with the common Unix / GNU style.
+   * Options are expected to start with dash '-'.
+   * One character option starts with 1 dash, long options start with two dashes
+   * @param optionName_ the option itself including dashes
+   * @param nbExpectedVars_ number of expected vars
+   * @return Whether the option is suitable with Unix GNU standard
+   */
+  static bool checkOptionGNU(const std::vector<std::string>& optionName_, const int& nbExpectedVars_);
 
 protected:
   int getOptionIndex(const std::string& name_);
