@@ -11,6 +11,10 @@
 #define CMDLINEPARSER_DEFAULT_FASCIST_MODE 1
 #endif
 
+#ifndef CMDLINEPARSER_DEFAULT_UNIXGNU_MODE
+#define CMDLINEPARSER_DEFAULT_UNIXGNU_MODE false
+#endif
+
 #include "string"
 #include "vector"
 #include "map"
@@ -29,13 +33,25 @@ public:
 
   void reset();
 
+  /**
+   * Check the legality of the arguments with the common Unix / GNU style.
+   * Options are expected to start with dash '-'.
+   * One character option starts with 1 dash, long options start with two dashes
+   * @param optionName_ the option itself including dashes
+   * @param nbExpectedVars_ number of expected vars
+   * @return Whether the option is suitable with Unix GNU standard
+   */
+  static bool checkOptionGNU(const std::vector<std::string>& optionName_, const int& nbExpectedVars_);
+
   //! Pre-parser
   void addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
   void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "", int nbExpectedVars_ = 1);
   static void setIsFascist(bool isFascistParsing_); // if an extra/unrecognised arg is provided, you'll be punished with a logic error!
+  static void setIsUnixGNU(bool var);
 
   //! Parser / Init
   void parseCmdLine(int argc, char** argv);
+  void parseGNUcmdLine(int argc, char** argv);
 
   //! Pre/Post-parser
   bool isOptionDefined(const std::string& name_);
@@ -92,6 +108,7 @@ private:
 
 namespace CmdLineParserGlobals{
   static bool _fascistMode_ = CMDLINEPARSER_DEFAULT_FASCIST_MODE;
+  static bool _unixGnuMode_ = CMDLINEPARSER_DEFAULT_UNIXGNU_MODE;
 }
 
 #include "implementation/CmdLineParser.impl.h"

@@ -36,3 +36,20 @@ make
 # Also works with a JSON file!
 ./OptionParserExample -y ../resources/configExample.json
 ```
+
+### GNU-like parsing
+
+GNU libraries standardised the CLI format. 
+If you like the way how it was done, you can process the arguments in the same way
+after enabling "GNU mode" with `clParser.setIsUnixGNU(true);`. With this mode short 
+arguments could be merged together and long arguments can be separated with `=`. 
+See examples below.
+
+```bash
+# if 'a', 'b', 'c' are trigger options
+./app.exe -abc == ./app.exe -a -b -c
+# if '-i' expects parameter
+./app.exe -iblabla == ./app.exe -i blabla
+# separation with '=' sign
+./app.exe --input=../test.dat == ./app.exe --input ../test.dat
+```

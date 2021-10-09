@@ -34,12 +34,31 @@ void CmdLineParser::reset(){
   _isInitialized_ = false;
 }
 
+bool CmdLineParser::checkOptionGNU(const std::vector<std::string>& commandLineCallStrList_, const int& nbExpectedVars_) {
+    if (nbExpectedVars_ > 1)
+        throw std::logic_error("Unix GNU standard doesn't allow more then 1 option. Option: " + commandLineCallStrList_[0]);
+    for (const auto& option : commandLineCallStrList_){
+        if (option.length() < 2)
+            throw std::logic_error("Option must start with dash and contain at least 1 character. Option: " + option);
+
+        if (option[0] != '-')
+            throw std::logic_error("Option must start with dash. Option: " + option);
+
+        if (option.length() > 2 && option[1] != '-')
+            throw std::logic_error("Long option must start with two dashs. Option: " + option);
+    }
+
+    return true;
+}
+
 //! Pre-parser
 void CmdLineParser::addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_) {
   this->addOption(optionName_, commandLineCallStrList_, description_, 0);
 }
 void CmdLineParser::addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_, int nbExpectedVars_) {
   if( _isInitialized_ ){ throw std::logic_error("Can't add options while parseCmdLine has already been called"); }
+  if (CmdLineParserGlobals::_unixGnuMode_)
+      checkOptionGNU(commandLineCallStrList_, nbExpectedVars_);
   if( this->isOptionDefined(optionName_) ){
     throw std::logic_error("Option \"" + optionName_ + "\" has already been defined.");
   }
@@ -55,12 +74,92 @@ void CmdLineParser::setIsFascist(bool isFascistParsing_){
   CmdLineParserGlobals::_fascistMode_ = isFascistParsing_;
 }
 
+void CmdLineParser::setIsUnixGNU(bool var){
+    CmdLineParserGlobals::_unixGnuMode_ = var;
+}
+
+void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
+    for( int iArg = 0 ; iArg < argc ; iArg++ ) {
+        if( iArg == 0 ) _commandName_ = argv[iArg];
+        else _commandLineArgs_.emplace_back(argv[iArg]);
+    }
+
+    for (auto argIt = _commandLineArgs_.begin(); argIt != _commandLineArgs_.end(); ++argIt) {
+        if ((*argIt).length() < 2 || (*argIt)[0] != '-')
+            throw std::logic_error("Unix GNU standard doesn't allow more then 1 option. Option: " + (*argIt));
+
+        if ((*argIt)[1] != '-') {
+            // [list of] short option was found
+            // loop over each option in the argument
+            std::string optionWord = (*argIt).substr(1);
+            for (const auto& shortArg :  optionWord) {
+                auto nextOpt = fetchOptionPtr("-" + std::string(&shortArg).substr(0, 1));
+                if (nextOpt == nullptr) {
+                    if (CmdLineParserGlobals::_fascistMode_)
+                        throw std::logic_error(&"Unrecognised option or value: " [ shortArg]);
+                    continue;
+                }
+
+                nextOpt->setIsTriggered(true);
+                if (nextOpt->getNbExpectedVars() == 0)
+                    continue;
+
+                // if the word is not over treat the rest of the word as an option value
+                if (optionWord.find(shortArg) != optionWord.length() - 1) {
+                    nextOpt->setNextVariableValue(optionWord.substr(optionWord.find(shortArg)+1));
+                    // done with the short option since no more chars to parse. Continue to next argument
+                    break;
+                } else {
+                    // end of line
+                    if (argIt == _commandLineArgs_.end() - 1) {
+                        throw std::logic_error("Option" + (*argIt).substr(0, 2) + "required a parameter, but nothing was found");
+                    }
+                    // take the next command line argument as a value
+                    nextOpt->setNextVariableValue(*(argIt + 1));
+                    ++argIt;
+                    continue;
+                }
+            }
+        } else {
+            // long option was found
+            auto eqPos = (*argIt).find('=');
+            auto searchPattern = (*argIt);
+            if (eqPos != std::string::npos)
+                searchPattern = searchPattern.substr(0, eqPos);
+            auto nextOpt = fetchOptionPtr(searchPattern);
+            if (nextOpt == nullptr) {
+                if (CmdLineParserGlobals::_fascistMode_)
+                    throw std::logic_error("Unrecognised option or value: " + (*argIt));
+                continue;
+            }
+            nextOpt->setIsTriggered(true);
+            if (nextOpt->getNbExpectedVars() == 0)
+                continue;
+            // separated with '='
+            if (eqPos != std::string::npos) {
+                nextOpt->setNextVariableValue((*argIt).substr(eqPos+1));
+                continue;
+            }
+            if (argIt == _commandLineArgs_.end() - 1) {
+                throw std::logic_error("Option" + (*argIt) + "required a parameter, but nothing was found");
+            }
+            nextOpt->setNextVariableValue(*(argIt + 1));
+            ++argIt;
+        }
+    }
+
+    _isInitialized_ = true;
+}
+
 //! Parser / Init
 void CmdLineParser::parseCmdLine(int argc, char** argv){
 
   if( _isInitialized_ ){
     throw std::logic_error("Can't parse cmd line args since it has already been called. Please do reset() before.");
   }
+
+  if (CmdLineParserGlobals::_unixGnuMode_)
+      return CmdLineParser::parseGNUcmdLine(argc, argv);
 
   for( int iArg = 0 ; iArg < argc ; iArg++ ){
     if( iArg == 0 ) _commandName_ = argv[iArg];
