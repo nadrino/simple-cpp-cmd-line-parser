@@ -332,9 +332,12 @@ template<class T> auto CmdLineParser::getOptionVal(const std::string &optionName
       // there is no ambiguity, index is 0
       index_ = 0;
     }
+    else if( optionPtr->getNbValues() == 0 ){
+      throw std::runtime_error("\"" + optionName_ + "\" option was not specified.");
+    }
     else{
       throw std::logic_error(optionName_ + ": " + std::to_string(optionPtr->getNbValues())
-                              + " values where set. You need to provide the index of the one you want.");
+                              + " values are set. You have to provide the index of the one you want.");
     }
   } // index_ == -1
   return optionPtr->template getValue<T>(index_);
