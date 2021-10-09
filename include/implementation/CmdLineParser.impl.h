@@ -166,7 +166,7 @@ void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
         auto nextOpt = fetchOptionPtr("-" + std::string(&shortArg).substr(0, 1));
         if (nextOpt == nullptr) {
           if (CmdLineParserGlobals::_fascistMode_)
-            throw std::logic_error(&"Unrecognised option or value: " [ shortArg]);
+            throw std::logic_error(std::string("Unrecognised option or value: ") + shortArg);
           continue;
         }
 
