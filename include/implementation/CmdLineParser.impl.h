@@ -266,8 +266,10 @@ std::string CmdLineParser::getConfigSummary(){
 std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
   std::stringstream ss;
   if( _isInitialized_ ){
+    bool noOptionIsSet{true};
     for( const auto& option : _optionsList_ ){
       if( option.isTriggered() ){
+        noOptionIsSet = false;
         if( not ss.str().empty() ) ss << std::endl;
         ss << option.getName() << ": ";
 
@@ -299,6 +301,12 @@ std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
         ss << " -> not called.";
       }
     }
+    if( noOptionIsSet ){
+      ss << "No options were set.";
+    }
+  }
+  else{
+    ss << "CmdLineParser not initialized.";
   }
   return ss.str();
 }
