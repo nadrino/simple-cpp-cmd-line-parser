@@ -28,23 +28,23 @@
 class CmdLineParser {
 
 public:
-  CmdLineParser();
-  CmdLineParser(int argc, char** argv);
-  virtual ~CmdLineParser();
+  inline CmdLineParser();
+  inline CmdLineParser(int argc, char** argv);
+  inline virtual ~CmdLineParser();
 
-  void reset();
-  void resetCmdLineArgs();
+  inline void reset();
+  inline void resetCmdLineArgs();
 
   //! Pre-parser
-  void addCmdLineArgs(int argc, char** argv);
-  void addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
-  void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "", int nbExpectedVars_ = 1);
-  static void setIsFascist(bool isFascistParsing_); // if an extra/unrecognised arg is provided, you'll be punished with a logic error!
-  static void setIsUnixGnuMode(bool isUnixGnuMode_);
+  inline void addCmdLineArgs(int argc, char** argv);
+  inline void addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
+  inline void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "", int nbExpectedVars_ = 1);
+  inline static void setIsFascist(bool isFascistParsing_); // if an extra/unrecognised arg is provided, you'll be punished with a logic error!
+  inline static void setIsUnixGnuMode(bool isUnixGnuMode_);
 
   //! Parser / Init
-  void parseCmdLine(int argc = -1, char** argv = nullptr);
-  void parseGNUcmdLine(int argc = -1, char** argv = nullptr);
+  inline void parseCmdLine(int argc = -1, char** argv = nullptr);
+  inline void parseGNUcmdLine(int argc = -1, char** argv = nullptr);
 
   //! Pre/Post-parser
   inline bool isOptionDefined(const std::string& name_);
@@ -85,7 +85,7 @@ public:
    * @param nbExpectedVars_ number of expected vars
    * @return Whether the option is suitable with Unix GNU standard
    */
-  static bool checkOptionGNU(const std::vector<std::string>& optionName_, const int& nbExpectedVars_);
+  inline static bool checkOptionGNU(const std::vector<std::string>& optionName_, const int& nbExpectedVars_);
 
 protected:
   inline int getOptionIndex(const std::string& name_);
