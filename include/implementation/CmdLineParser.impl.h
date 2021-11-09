@@ -427,7 +427,8 @@ std::string CmdLineParser::dumpConfigAsYamlStr() {
 std::string CmdLineParser::dumpConfigAsJsonStr(){
   YAML::Emitter emitter;
   emitter << YAML::DoubleQuoted << YAML::Flow << YAML::BeginSeq << this->dumpConfigAsYamlNode();
-  return std::string(emitter.c_str() + 1); // +1: shift the array address to get rid of the heading "["
+  if( emitter.c_str() == nullptr ) return "";
+  return {emitter.c_str() + 1}; // +1: shift the array address to get rid of the heading "["
 }
 #endif
 
