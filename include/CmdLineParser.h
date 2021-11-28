@@ -49,7 +49,9 @@ public:
   //! Pre/Post-parser
   inline bool isOptionDefined(const std::string& name_);
   inline const CmdLineParserUtils::OptionHolder& getOption(const std::string& optionName_);
+  inline CmdLineParserUtils::OptionHolder* getOptionPtr(const std::string& optionName_);
   inline std::string getConfigSummary();
+  inline bool isNoOptionTriggered() const;
   inline std::string getValueSummary(bool showNonCalledVars_ = false);
 
   //! Post-parser
@@ -62,6 +64,7 @@ public:
   template<class T> inline auto getOptionVal(const std::string& optionName_, int index_ = -1) -> T;
   template<class T> inline auto getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_ = -1) -> T;
   template<class T> inline auto getOptionValList(const std::string &optionName_) -> std::vector<T>;
+  inline std::string getOptionVal(const std::string& optionName_, const char* defaultVal_, int index_ = -1);
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
   // Setup

@@ -37,6 +37,9 @@ namespace CmdLineParserUtils{
     void setIsTriggered(bool isTriggered_){
       _isTriggered_ = isTriggered_;
     }
+    void setAllowEmptyValue(bool allowEmptyValue_){
+      _allowEmptyValue_ = allowEmptyValue_;
+    }
     void setNextVariableValue(const std::string& valueStr_){
       if( _nbExpectedVars_ == -1 or _strValuesList_.size() < _nbExpectedVars_ ){
         _strValuesList_.emplace_back(valueStr_);
@@ -48,6 +51,7 @@ namespace CmdLineParserUtils{
 
     // Getters
     bool isTriggered() const { return _isTriggered_; }
+    bool isAllowEmptyValue() const { return _allowEmptyValue_; }
     const std::string &getName() const {
       return _name_;
     }
@@ -89,20 +93,21 @@ namespace CmdLineParserUtils{
         }
         ss << "}";
       }
-      ss << ": " << _description_;
-      if( _nbExpectedVars_ > 1 ){
-        ss << " (" << _nbExpectedVars_ << " values expected)";
-      }
-      else if( _nbExpectedVars_ == 1 ){
-        ss << " (" << _nbExpectedVars_ << " value expected)";
-      }
-      else if( _nbExpectedVars_ == 0 ){
-        ss << " (trigger)";
+      ss << ": " << _description_ << " (";
+
+      if( _nbExpectedVars_ != 0 ){
+        if( _allowEmptyValue_ ) ss << "optional: ";
+        else ss << "expected: ";
+
+        if( _nbExpectedVars_ == 1 ) ss << "1 value";
+        else if( _nbExpectedVars_ > 1 ) ss << _nbExpectedVars_ << " values";
+        else ss << "N values";
+
       }
       else{
-        ss << " (as many values as you provide)";
+        ss << "trigger";
       }
-
+      ss << ")";
       return ss.str();
     }
 
@@ -160,6 +165,7 @@ namespace CmdLineParserUtils{
   private:
 
     bool _isTriggered_{false};
+    bool _allowEmptyValue_{false};
     std::string _name_;
     std::string _description_;
     std::vector<std::string> _cmdLineCallStrList_;

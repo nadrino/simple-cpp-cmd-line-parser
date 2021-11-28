@@ -97,7 +97,7 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
     if( nextOpt != nullptr ){
 
       // Check if all the required values have been specified in the last option
-      if( optionPtr != nullptr and not optionPtr->isFullyFilled() ){
+      if( optionPtr != nullptr and not optionPtr->isFullyFilled() and not optionPtr->isAllowEmptyValue() ){
         throw std::logic_error(optionPtr->getName() + ": missing values before starting " + nextOpt->getName()
                                 + " (" + std::to_string(optionPtr->getNbExpectedVars()) + " values were expected)");
       }
@@ -237,6 +237,13 @@ const CmdLineParserUtils::OptionHolder &CmdLineParser::getOption(const std::stri
   }
   return _optionsList_.at(optionIndex);
 }
+inline CmdLineParserUtils::OptionHolder* CmdLineParser::getOptionPtr(const std::string& optionName_){
+  int optionIndex = this->getOptionIndex(optionName_);
+  if( optionIndex == -1 ){
+    throw std::logic_error("Option " + optionName_ + " is not defined");
+  }
+  return &_optionsList_.at(optionIndex);
+}
 std::string CmdLineParser::getConfigSummary(){
   std::stringstream ss;
 
@@ -263,13 +270,20 @@ std::string CmdLineParser::getConfigSummary(){
 
   return ss.str();
 }
+inline bool CmdLineParser::isNoOptionTriggered() const{
+  for( const auto& option : _optionsList_ ){
+    if( option.isTriggered() ){ return false; }
+  }
+  return true;
+}
 std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
   std::stringstream ss;
   if( _isInitialized_ ){
-    bool noOptionIsSet{true};
+    if(this->isNoOptionTriggered() ){
+      ss << "No options were set.";
+    }
     for( const auto& option : _optionsList_ ){
       if( option.isTriggered() ){
-        noOptionIsSet = false;
         if( not ss.str().empty() ) ss << std::endl;
         ss << option.getName() << ": ";
 
@@ -300,9 +314,6 @@ std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
         }
         ss << " -> not called.";
       }
-    }
-    if( noOptionIsSet ){
-      ss << "No options were set.";
     }
   }
   else{
@@ -352,13 +363,21 @@ template<class T> auto CmdLineParser::getOptionVal(const std::string &optionName
 }
 template<class T> auto CmdLineParser::getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_) -> T{
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
-  try{
-    return this->template getOptionVal<T>(optionName_,index_);
+
+  auto* optionPtr = this->getOptionPtr(optionName_);
+  if( optionPtr->isTriggered() ){
+    if( optionPtr->getNbValues() == 0 and optionPtr->isAllowEmptyValue() ){ return defaultValue_; }
+    try{
+      return this->template getOptionVal<T>(optionName_,index_);
+    }
+    catch ( std::logic_error& e ){
+      // Catch only logic errors. runtime error will still show
+      return defaultValue_;
+    }
   }
-  catch ( std::logic_error& e ){
-    // Catch only logic errors. runtime error will still show
-    return defaultValue_;
-  }
+
+  // if not triggered
+  return defaultValue_;
 }
 template<class T> auto CmdLineParser::getOptionValList(const std::string &optionName_) -> std::vector<T> {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
@@ -368,6 +387,11 @@ template<class T> auto CmdLineParser::getOptionValList(const std::string &option
     outputList.template emplace_back(optionPtr->template getValue<T>(iIndex));
   }
   return outputList;
+}
+
+// template specialization
+inline std::string CmdLineParser::getOptionVal(const std::string& optionName_, const char* defaultVal_, int index_){
+  return this->getOptionVal(optionName_, std::string(defaultVal_), index_);
 }
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
