@@ -132,7 +132,7 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
 
   }
 
-  if( optionPtr != nullptr and not optionPtr->isFullyFilled() ){
+  if( optionPtr != nullptr and not optionPtr->isFullyFilled() and not optionPtr->isAllowEmptyValue() ){
     throw std::logic_error(optionPtr->getName() + ": missing values (" + std::to_string(optionPtr->getNbExpectedVars()) + " values were expected)");
   }
 
