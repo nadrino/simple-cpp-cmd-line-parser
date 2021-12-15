@@ -53,6 +53,7 @@ public:
   inline std::string getConfigSummary();
   inline bool isNoOptionTriggered() const;
   inline std::string getValueSummary(bool showNonCalledVars_ = false);
+  inline std::string getCommandLineString() const;
 
   //! Post-parser
   inline bool isOptionTriggered(const std::string &optionName_);

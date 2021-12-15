@@ -321,6 +321,11 @@ std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
   }
   return ss.str();
 }
+std::string CmdLineParser::getCommandLineString() const{
+  std::string cl = _commandName_;
+  for( const auto& arg : _commandLineArgs_ ){ cl += " " + arg; }
+  return cl;
+}
 
 //! Post-parser
 bool CmdLineParser::isOptionTriggered(const std::string &optionName_) {
