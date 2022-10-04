@@ -48,7 +48,8 @@ void CmdLineParser::addCmdLineArgs(int argc, char** argv){
 void CmdLineParser::addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_) {
   this->addOption(optionName_, commandLineCallStrList_, description_, 0);
 }
-void CmdLineParser::addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_, int nbExpectedVars_) {
+void CmdLineParser::addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_,
+                              const std::string &description_, int nbExpectedVars_, bool allowEmpty_) {
   if( _isInitialized_ ){ throw std::logic_error("Can't add options while parseCmdLine has already been called"); }
 
   if (CmdLineParserGlobals::_unixGnuMode_){
@@ -65,6 +66,11 @@ void CmdLineParser::addOption(const std::string &optionName_, const std::vector<
   }
   _optionsList_.back().setDescription(description_);
   _optionsList_.back().setNbExpectedVars(nbExpectedVars_);
+  _optionsList_.back().setAllowEmptyValue(allowEmpty_);
+}
+void CmdLineParser::addDummyOption(const std::string &dummyTitle_){
+  _optionsList_.emplace_back();
+  _optionsList_.back().setDescription(dummyTitle_);
 }
 void CmdLineParser::setIsFascist(bool isFascistParsing_){
   CmdLineParserGlobals::_fascistMode_ = isFascistParsing_;
@@ -93,7 +99,7 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
   CmdLineParserUtils::OptionHolder* optionPtr = nullptr;
   for( const auto & argument : _commandLineArgs_){
 
-    CmdLineParserUtils::OptionHolder* nextOpt = fetchOptionPtr(argument);
+    CmdLineParserUtils::OptionHolder* nextOpt = this->fetchOptionPtr(argument);
     if( nextOpt != nullptr ){
 
       // Check if all the required values have been specified in the last option
@@ -163,7 +169,7 @@ void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
       // loop over each option in the argument
       std::string optionWord = (*argIt).substr(1);
       for (const auto& shortArg :  optionWord) {
-        auto nextOpt = fetchOptionPtr("-" + std::string(&shortArg).substr(0, 1));
+        auto* nextOpt = this->fetchOptionPtr("-" + std::string(&shortArg).substr(0, 1));
         if (nextOpt == nullptr) {
           if (CmdLineParserGlobals::_fascistMode_)
             throw std::logic_error(std::string("Unrecognised option or value: ") + shortArg);
@@ -196,7 +202,7 @@ void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
       auto searchPattern = (*argIt);
       if (eqPos != std::string::npos)
         searchPattern = searchPattern.substr(0, eqPos);
-      auto nextOpt = fetchOptionPtr(searchPattern);
+      auto nextOpt = this->fetchOptionPtr(searchPattern);
       if (nextOpt == nullptr) {
         if (CmdLineParserGlobals::_fascistMode_)
           throw std::logic_error("Unrecognised option or value: " + (*argIt));
@@ -246,16 +252,27 @@ inline CmdLineParserUtils::OptionHolder* CmdLineParser::getOptionPtr(const std::
 }
 std::string CmdLineParser::getConfigSummary(){
   std::stringstream ss;
+  std::string bufStr;
 
-  for( const auto& option : _optionsList_ ){if( not ss.str().empty() ) ss << std::endl;
-    ss << option.getSummary();
-#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
-    for( const auto& yamlOption : _yamlConfigs_ ){
-      if( option.getName() == yamlOption ){
-        ss << " ** YAML config option";
-      }
+  for( const auto& option : _optionsList_ ){
+    if( not ss.str().empty() ) ss << std::endl;
+    bufStr = option.getSummary();
+    if( bufStr.empty() ){
+      // dummy option -> print a separator
+      ss << "────────────";
+      if( not option.getDescription().empty() ) ss << " " << option.getDescription() << " ";
+      ss << "────────────";
     }
+    else{
+      ss << option.getSummary();
+#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
+      for( const auto& yamlOption : _yamlConfigs_ ){
+        if( option.getName() == yamlOption ){
+          ss << " ** YAML config option";
+        }
+      }
 #endif
+    }
   }
   if( not _commandLineArgs_.empty() ){
     ss << std::endl << "Command Line Args: { ";
@@ -489,20 +506,15 @@ int CmdLineParser::getOptionIndex(const std::string& name_){
   return -1;
 }
 CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionPtr(const std::string& optionCallStr_){
-  CmdLineParserUtils::OptionHolder* optionPtr = nullptr;
   for( auto& option : _optionsList_ ){
-    bool thisArgIsOption = false;
+    if( option.getName().empty() ){ continue; } // skip dummy options
+    // loop over the possible calls
     for( const auto& cmdLineCall : option.getCmdLineCallStrList() ){
-      if( cmdLineCall == optionCallStr_ ){
-        thisArgIsOption = true;
-        break;
-      }
-    }
-    if( thisArgIsOption ){
-      optionPtr = &option;
+      // call found? return the ptr
+      if( cmdLineCall == optionCallStr_ ){ return &option; }
     }
   }
-  return optionPtr;
+  return nullptr; // default return -> no call
 }
 CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionByNamePtr(const std::string& optionName_){
   CmdLineParserUtils::OptionHolder* optionPtr = nullptr;

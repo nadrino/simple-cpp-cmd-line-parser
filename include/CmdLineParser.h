@@ -38,7 +38,9 @@ public:
   //! Pre-parser
   inline void addCmdLineArgs(int argc, char** argv);
   inline void addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
-  inline void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "", int nbExpectedVars_ = 1);
+  inline void addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_,
+                        const std::string &description_ = "", int nbExpectedVars_ = 1, bool allowEmpty_ = false);
+  inline void addDummyOption(const std::string &dummyTitle_ = ""); // only display a separation bar when printing getConfigSummary()
   inline static void setIsFascist(bool isFascistParsing_); // if an extra/unrecognised arg is provided, you'll be punished with a logic error!
   inline static void setIsUnixGnuMode(bool isUnixGnuMode_);
 

@@ -82,6 +82,9 @@ namespace CmdLineParserUtils{
     // Misc
     std::string getSummary() const{
       std::stringstream ss;
+
+      if( _name_.empty() ){ return ss.str(); }
+
       ss << _name_;
       if( not _cmdLineCallStrList_.empty() ){
         ss << " {";
