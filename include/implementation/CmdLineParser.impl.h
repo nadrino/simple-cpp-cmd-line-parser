@@ -20,19 +20,10 @@
 
 //#include <CmdLineParser.h>
 
-CmdLineParser::CmdLineParser(){ this->reset(); }
-CmdLineParser::CmdLineParser(int argc, char** argv){ this->reset(); this->addCmdLineArgs(argc, argv); }
-CmdLineParser::~CmdLineParser(){ this->reset(); }
+CmdLineParser::CmdLineParser() = default;
+CmdLineParser::CmdLineParser(int argc, char** argv){ this->addCmdLineArgs(argc, argv); }
+CmdLineParser::~CmdLineParser() = default;
 
-void CmdLineParser::reset(){
-  this->resetCmdLineArgs();
-  _optionsList_.clear();
-#ifdef CMDLINEPARSER_YAML_CPP_ENABLED
-  _enableYamlOptionAdding_ = false;
-  _yamlConfigs_.clear();
-#endif
-  _isInitialized_ = false;
-}
 void CmdLineParser::resetCmdLineArgs(){
   _commandLineArgs_.clear();
   _commandName_ = "";
@@ -233,10 +224,24 @@ void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
 }
 
 //! Pre/Post-parser
-bool CmdLineParser::isOptionDefined(const std::string& name_){
+inline bool CmdLineParser::isNoOptionTriggered() const{
+  for( const auto& option : _optionsList_ ){
+    if( option.isTriggered() ){ return false; }
+  }
+  return true;
+}
+inline std::string CmdLineParser::getCommandLineString() const{
+  std::string cl = _commandName_;
+  for( const auto& arg : _commandLineArgs_ ){ cl += " " + arg; }
+  return cl;
+}
+inline const std::stringstream& CmdLineParser::getDescription() const {
+  return _descriptionStringStream_;
+}
+inline bool CmdLineParser::isOptionDefined(const std::string& name_){
   return ( this->getOptionIndex(name_) != -1 );
 }
-const CmdLineParserUtils::OptionHolder &CmdLineParser::getOption(const std::string &optionName_) {
+inline const CmdLineParserUtils::OptionHolder &CmdLineParser::getOption(const std::string &optionName_) const {
   int optionIndex = this->getOptionIndex(optionName_);
   if( optionIndex == -1 ){
     throw std::logic_error("Option " + optionName_ + " is not defined");
@@ -250,7 +255,7 @@ inline CmdLineParserUtils::OptionHolder* CmdLineParser::getOptionPtr(const std::
   }
   return &_optionsList_.at(optionIndex);
 }
-std::string CmdLineParser::getConfigSummary(){
+inline std::string CmdLineParser::getConfigSummary(){
   std::stringstream ss;
   std::string bufStr;
 
@@ -287,13 +292,7 @@ std::string CmdLineParser::getConfigSummary(){
 
   return ss.str();
 }
-inline bool CmdLineParser::isNoOptionTriggered() const{
-  for( const auto& option : _optionsList_ ){
-    if( option.isTriggered() ){ return false; }
-  }
-  return true;
-}
-std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
+inline std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
   std::stringstream ss;
   if( _isInitialized_ ){
     if(this->isNoOptionTriggered() ){
@@ -338,10 +337,8 @@ std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
   }
   return ss.str();
 }
-std::string CmdLineParser::getCommandLineString() const{
-  std::string cl = _commandName_;
-  for( const auto& arg : _commandLineArgs_ ){ cl += " " + arg; }
-  return cl;
+inline std::stringstream& CmdLineParser::getDescription() {
+  return _descriptionStringStream_;
 }
 
 //! Post-parser
@@ -432,8 +429,14 @@ void CmdLineParser::parseYamlFile(const std::string &yamlFilePath_){
     throw std::logic_error("CmdLineParser::parseYamlFile can't be called while already initialized.");
   }
 
-  this->reset(); // rebuild from scratch
-  this->setEnableYamlOptionAdding(true);
+  // reset
+  this->resetCmdLineArgs();
+  _optionsList_.clear();
+  _enableYamlOptionAdding_ = false;
+  _yamlConfigs_.clear();
+  _isInitialized_ = false;
+
+  this->setEnableYamlOptionAdding( true );
 
   this->addOption("CmdLineParser::parseYamlFile", {}, "Provided yaml file path", 1);
   _yamlConfigs_.emplace_back("CmdLineParser::parseYamlFile");
@@ -497,7 +500,7 @@ bool CmdLineParser::checkOptionGNU(const std::vector<std::string>& commandLineCa
 
 
 // Protected:
-int CmdLineParser::getOptionIndex(const std::string& name_){
+int CmdLineParser::getOptionIndex(const std::string& name_) const {
   for( size_t iOption = 0 ; iOption < _optionsList_.size() ; iOption++ ){
     if( _optionsList_.at(iOption).getName() == name_ ){
       return int(iOption);

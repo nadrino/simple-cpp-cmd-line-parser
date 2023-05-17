@@ -18,6 +18,7 @@
 #include "string"
 #include "vector"
 #include "map"
+#include "sstream"
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
 #include "yaml-cpp/yaml.h"
@@ -32,7 +33,6 @@ public:
   inline CmdLineParser(int argc, char** argv);
   inline virtual ~CmdLineParser();
 
-  inline void reset();
   inline void resetCmdLineArgs();
 
   //! Pre-parser
@@ -49,19 +49,21 @@ public:
   inline void parseGNUcmdLine(int argc = -1, char** argv = nullptr);
 
   //! Pre/Post-parser
+  [[nodiscard]] inline bool isNoOptionTriggered() const;
+  [[nodiscard]] inline std::string getCommandLineString() const;
+  [[nodiscard]] inline const std::stringstream& getDescription() const;
+  [[nodiscard]] inline const CmdLineParserUtils::OptionHolder& getOption(const std::string& optionName_) const;
   inline bool isOptionDefined(const std::string& name_);
-  inline const CmdLineParserUtils::OptionHolder& getOption(const std::string& optionName_);
-  inline CmdLineParserUtils::OptionHolder* getOptionPtr(const std::string& optionName_);
   inline std::string getConfigSummary();
-  inline bool isNoOptionTriggered() const;
   inline std::string getValueSummary(bool showNonCalledVars_ = false);
-  inline std::string getCommandLineString() const;
+  inline std::stringstream& getDescription();
+  inline CmdLineParserUtils::OptionHolder* getOptionPtr(const std::string& optionName_);
 
   //! Post-parser
+  [[nodiscard]] inline const std::string &getCommandName() const;
   inline bool isOptionTriggered(const std::string &optionName_);
   inline bool isOptionSet(const std::string &optionName_, size_t index_ = 0);
   inline size_t getNbValueSet(const std::string &optionName_);
-  inline const std::string &getCommandName() const;
 
   // Fetching Values
   template<class T> inline auto getOptionVal(const std::string& optionName_, int index_ = -1) -> T;
@@ -94,7 +96,7 @@ public:
   inline static bool checkOptionGNU(const std::vector<std::string>& optionName_, const int& nbExpectedVars_);
 
 protected:
-  inline int getOptionIndex(const std::string& name_);
+  inline int getOptionIndex(const std::string& name_) const;
   inline CmdLineParserUtils::OptionHolder* fetchOptionPtr(const std::string& optionCallStr_);
   inline CmdLineParserUtils::OptionHolder* fetchOptionByNamePtr(const std::string& optionName_);
 
@@ -104,20 +106,21 @@ protected:
 
 private:
   bool _isInitialized_{false};
-  std::string _commandName_;
-  std::vector<std::string> _commandLineArgs_;
-  std::vector<CmdLineParserUtils::OptionHolder> _optionsList_;
+  std::string _commandName_{};
+  std::stringstream _descriptionStringStream_{};
+  std::vector<std::string> _commandLineArgs_{};
+  std::vector<CmdLineParserUtils::OptionHolder> _optionsList_{};
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
   bool _enableYamlOptionAdding_{false};
-  std::vector<std::string> _yamlConfigs_;
+  std::vector<std::string> _yamlConfigs_{};
 #endif
 
 };
 
 namespace CmdLineParserGlobals{
-  static bool _fascistMode_ = CMDLINEPARSER_DEFAULT_FASCIST_MODE;
-  static bool _unixGnuMode_ = CMDLINEPARSER_DEFAULT_UNIXGNU_MODE;
+  static bool _fascistMode_{CMDLINEPARSER_DEFAULT_FASCIST_MODE};
+  static bool _unixGnuMode_{CMDLINEPARSER_DEFAULT_UNIXGNU_MODE};
 }
 
 #include "implementation/CmdLineParser.impl.h"
