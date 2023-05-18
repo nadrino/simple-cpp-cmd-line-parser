@@ -101,20 +101,25 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
 
       optionPtr = nextOpt;
       optionPtr->setIsTriggered(true);
+      if( optionPtr->getNbExpectedVars() == 0 ){
+        // nothing more is expected here
+        optionPtr = nullptr;
+      }
 
       continue; // next entry of the loop
     }
     if( optionPtr != nullptr ){
       // if optionPtr has been previously set, then we are expected to do something
       if( optionPtr->getNbExpectedVars() == 0 ){
-        // This is an option trigger: no extra arg is
+        // This is an option trigger: no extra arg is expected
         optionPtr->setIsTriggered(true);
+        optionPtr = nullptr; // that's all we need to do
       }
       else{
         optionPtr->setNextVariableValue(argument);
       }
 
-      if(not CmdLineParserGlobals::_fascistMode_ and optionPtr->getNbExpectedVars() == optionPtr->getNbValues() ){
+      if( not CmdLineParserGlobals::_fascistMode_ and optionPtr->getNbExpectedVars() == optionPtr->getNbValues() ){
         // if an extra argument is provided but is not recognized, it will simply be ignored.
         // For a _fascistMode_: this is unacceptable!
         optionPtr = nullptr;
