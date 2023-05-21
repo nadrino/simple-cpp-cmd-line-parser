@@ -235,32 +235,15 @@ inline bool CmdLineParser::isNoOptionTriggered() const{
   }
   return true;
 }
+inline bool CmdLineParser::isOptionDefined(const std::string& name_) const {
+  return ( this->getOptionIndex(name_) != -1 );
+}
 inline std::string CmdLineParser::getCommandLineString() const{
   std::string cl = _commandName_;
   for( const auto& arg : _commandLineArgs_ ){ cl += " " + arg; }
   return cl;
 }
-inline const std::stringstream& CmdLineParser::getDescription() const {
-  return _descriptionStringStream_;
-}
-inline bool CmdLineParser::isOptionDefined(const std::string& name_){
-  return ( this->getOptionIndex(name_) != -1 );
-}
-inline const CmdLineParserUtils::OptionHolder &CmdLineParser::getOption(const std::string &optionName_) const {
-  int optionIndex = this->getOptionIndex(optionName_);
-  if( optionIndex == -1 ){
-    throw std::logic_error("Option " + optionName_ + " is not defined");
-  }
-  return _optionsList_.at(optionIndex);
-}
-inline CmdLineParserUtils::OptionHolder* CmdLineParser::getOptionPtr(const std::string& optionName_){
-  int optionIndex = this->getOptionIndex(optionName_);
-  if( optionIndex == -1 ){
-    throw std::logic_error("Option " + optionName_ + " is not defined");
-  }
-  return &_optionsList_.at(optionIndex);
-}
-inline std::string CmdLineParser::getConfigSummary(){
+inline std::string CmdLineParser::getConfigSummary() const{
   std::stringstream ss;
   std::string bufStr;
 
@@ -297,7 +280,7 @@ inline std::string CmdLineParser::getConfigSummary(){
 
   return ss.str();
 }
-inline std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
+inline std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) const {
   std::stringstream ss;
   if( _isInitialized_ ){
     if(this->isNoOptionTriggered() ){
@@ -342,23 +325,46 @@ inline std::string CmdLineParser::getValueSummary(bool showNonCalledVars_) {
   }
   return ss.str();
 }
+inline const std::stringstream& CmdLineParser::getDescription() const {
+  return _descriptionStringStream_;
+}
+inline const CmdLineParserUtils::OptionHolder &CmdLineParser::getOption(const std::string &optionName_) const {
+  int optionIndex = this->getOptionIndex(optionName_);
+  if( optionIndex == -1 ){
+    throw std::logic_error("Option " + optionName_ + " is not defined");
+  }
+  return _optionsList_.at(optionIndex);
+}
+inline const CmdLineParserUtils::OptionHolder* CmdLineParser::getOptionPtr(const std::string& optionName_) const{
+  int optionIndex = this->getOptionIndex(optionName_);
+  if( optionIndex == -1 ){
+    throw std::logic_error("Option " + optionName_ + " is not defined");
+  }
+  return &_optionsList_.at(optionIndex);
+}
+
 inline std::stringstream& CmdLineParser::getDescription() {
   return _descriptionStringStream_;
 }
+inline CmdLineParserUtils::OptionHolder* CmdLineParser::getOptionPtr(const std::string& optionName_){
+  // Call the const version by const_casting the object to remove const-ness
+  return const_cast<CmdLineParserUtils::OptionHolder*>(const_cast<const CmdLineParser*>(this)->getOptionPtr(optionName_));
+}
+
 
 //! Post-parser
-bool CmdLineParser::isOptionTriggered(const std::string &optionName_) {
+bool CmdLineParser::isOptionTriggered(const std::string &optionName_) const {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   return this->getOption(optionName_).isTriggered();
 }
-bool CmdLineParser::isOptionSet(const std::string &optionName_, size_t index_){
+bool CmdLineParser::isOptionSet(const std::string &optionName_, size_t index_) const {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   const CmdLineParserUtils::OptionHolder* optionPtr = &this->getOption(optionName_);
   if( optionPtr->getNbExpectedVars() == 0 ) return isOptionTriggered(optionName_);
   if(optionPtr->getNbValues() > index_ ) return true;
   return false;
 }
-size_t CmdLineParser::getNbValueSet(const std::string &optionName_){
+size_t CmdLineParser::getNbValueSet(const std::string &optionName_) const {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   return this->getOption(optionName_).getNbValues();
 }
@@ -367,7 +373,7 @@ const std::string &CmdLineParser::getCommandName() const {
 }
 
 // Fetching Values
-template<class T> auto CmdLineParser::getOptionVal(const std::string &optionName_, int index_) -> T {
+template<typename T> auto CmdLineParser::getOptionVal(const std::string &optionName_, int index_) const -> T {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   const CmdLineParserUtils::OptionHolder* optionPtr = &this->getOption(optionName_);
   if( index_ == -1 ){
@@ -385,7 +391,7 @@ template<class T> auto CmdLineParser::getOptionVal(const std::string &optionName
   } // index_ == -1
   return optionPtr->template getValue<T>(index_);
 }
-template<class T> auto CmdLineParser::getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_) -> T{
+template<typename T> auto CmdLineParser::getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_) const -> T{
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
 
   auto* optionPtr = this->getOptionPtr(optionName_);
@@ -403,7 +409,7 @@ template<class T> auto CmdLineParser::getOptionVal(const std::string& optionName
   // if not triggered
   return defaultValue_;
 }
-template<class T> auto CmdLineParser::getOptionValList(const std::string &optionName_) -> std::vector<T> {
+template<typename T> auto CmdLineParser::getOptionValList(const std::string &optionName_) const -> std::vector<T> {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   std::vector<T> outputList;
   const CmdLineParserUtils::OptionHolder* optionPtr = &this->getOption(optionName_);
@@ -414,7 +420,7 @@ template<class T> auto CmdLineParser::getOptionValList(const std::string &option
 }
 
 // template specialization
-inline std::string CmdLineParser::getOptionVal(const std::string& optionName_, const char* defaultVal_, int index_){
+inline std::string CmdLineParser::getOptionVal(const std::string& optionName_, const char* defaultVal_, int index_) const {
   return this->getOptionVal(optionName_, std::string(defaultVal_), index_);
 }
 

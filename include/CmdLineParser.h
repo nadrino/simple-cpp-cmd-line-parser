@@ -50,26 +50,30 @@ public:
 
   //! Pre/Post-parser
   [[nodiscard]] inline bool isNoOptionTriggered() const;
+  [[nodiscard]] inline bool isOptionDefined(const std::string& name_) const;
+  [[nodiscard]] inline std::string getConfigSummary() const;
   [[nodiscard]] inline std::string getCommandLineString() const;
+  [[nodiscard]] inline std::string getValueSummary(bool showNonCalledVars_ = false) const;
   [[nodiscard]] inline const std::stringstream& getDescription() const;
   [[nodiscard]] inline const CmdLineParserUtils::OptionHolder& getOption(const std::string& optionName_) const;
-  inline bool isOptionDefined(const std::string& name_);
-  inline std::string getConfigSummary();
-  inline std::string getValueSummary(bool showNonCalledVars_ = false);
+  [[nodiscard]] inline const CmdLineParserUtils::OptionHolder* getOptionPtr(const std::string& optionName_) const;
+
   inline std::stringstream& getDescription();
   inline CmdLineParserUtils::OptionHolder* getOptionPtr(const std::string& optionName_);
 
   //! Post-parser
+  [[nodiscard]] inline bool isOptionTriggered(const std::string &optionName_) const;
+  [[nodiscard]] inline bool isOptionSet(const std::string &optionName_, size_t index_ = 0) const;
+  [[nodiscard]] inline size_t getNbValueSet(const std::string &optionName_) const;
   [[nodiscard]] inline const std::string &getCommandName() const;
-  inline bool isOptionTriggered(const std::string &optionName_);
-  inline bool isOptionSet(const std::string &optionName_, size_t index_ = 0);
-  inline size_t getNbValueSet(const std::string &optionName_);
 
   // Fetching Values
-  template<class T> inline auto getOptionVal(const std::string& optionName_, int index_ = -1) -> T;
-  template<class T> inline auto getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_ = -1) -> T;
-  template<class T> inline auto getOptionValList(const std::string &optionName_) -> std::vector<T>;
-  inline std::string getOptionVal(const std::string& optionName_, const char* defaultVal_, int index_ = -1);
+  template<typename T> inline auto getOptionVal(const std::string& optionName_, int index_ = -1) const -> T;
+  template<typename T> inline auto getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_ = -1) const -> T;
+  template<typename T> inline auto getOptionValList(const std::string &optionName_) const -> std::vector<T>;
+
+  // template specialization
+  inline std::string getOptionVal(const std::string& optionName_, const char* defaultVal_, int index_ = -1) const;
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
   // Setup
