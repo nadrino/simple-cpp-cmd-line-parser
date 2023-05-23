@@ -20,26 +20,26 @@
 
 //#include <CmdLineParser.h>
 
-CmdLineParser::CmdLineParser() = default;
-CmdLineParser::CmdLineParser(int argc, char** argv){ this->addCmdLineArgs(argc, argv); }
-CmdLineParser::~CmdLineParser() = default;
+inline CmdLineParser::CmdLineParser() = default;
+inline CmdLineParser::CmdLineParser(int argc, char** argv){ this->addCmdLineArgs(argc, argv); }
+inline CmdLineParser::~CmdLineParser() = default;
 
-void CmdLineParser::resetCmdLineArgs(){
+inline void CmdLineParser::resetCmdLineArgs(){
   _commandLineArgs_.clear();
   _commandName_ = "";
 }
 
 //! Pre-parser
-void CmdLineParser::addCmdLineArgs(int argc, char** argv){
+inline void CmdLineParser::addCmdLineArgs(int argc, char** argv){
   for( int iArg = 0 ; iArg < argc ; iArg++ ){
     if( _commandName_.empty() and iArg == 0 ) _commandName_ = argv[iArg];
     else _commandLineArgs_.emplace_back(argv[iArg]);
   }
 }
-void CmdLineParser::addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_) {
+inline void CmdLineParser::addTriggerOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_) {
   this->addOption(optionName_, commandLineCallStrList_, description_, 0);
 }
-void CmdLineParser::addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_,
+inline void CmdLineParser::addOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_,
                               const std::string &description_, int nbExpectedVars_, bool allowEmpty_) {
   if( _isInitialized_ ){ throw std::logic_error("Can't add options while parseCmdLine has already been called"); }
 
@@ -59,20 +59,20 @@ void CmdLineParser::addOption(const std::string &optionName_, const std::vector<
   _optionsList_.back().setNbExpectedVars(nbExpectedVars_);
   _optionsList_.back().setAllowEmptyValue(allowEmpty_);
 }
-void CmdLineParser::addDummyOption(const std::string &dummyTitle_){
+inline void CmdLineParser::addDummyOption(const std::string &dummyTitle_){
   _optionsList_.emplace_back();
   _optionsList_.back().setDescription(dummyTitle_);
 }
-void CmdLineParser::setIsFascist(bool isFascistParsing_){
+inline void CmdLineParser::setIsFascist(bool isFascistParsing_){
   CmdLineParserGlobals::_fascistMode_ = isFascistParsing_;
 }
-void CmdLineParser::setIsUnixGnuMode(bool isUnixGnuMode_){
+inline void CmdLineParser::setIsUnixGnuMode(bool isUnixGnuMode_){
     CmdLineParserGlobals::_unixGnuMode_ = isUnixGnuMode_;
 }
 
 
 //! Parser / Init
-void CmdLineParser::parseCmdLine(int argc, char** argv){
+inline void CmdLineParser::parseCmdLine(int argc, char** argv){
 
   if( _isInitialized_ ){
     throw std::logic_error("Can't parse cmd line args since it has already been called. Please do reset() before.");
@@ -146,7 +146,7 @@ void CmdLineParser::parseCmdLine(int argc, char** argv){
 #endif
 
 }
-void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
+inline void CmdLineParser::parseGNUcmdLine(int argc, char** argv) {
   if( _isInitialized_ ){
     throw std::logic_error("Can't parse cmd line args since it has already been called. Please do reset() before.");
   }
@@ -353,22 +353,22 @@ inline CmdLineParserUtils::OptionHolder* CmdLineParser::getOptionPtr(const std::
 
 
 //! Post-parser
-bool CmdLineParser::isOptionTriggered(const std::string &optionName_) const {
+inline bool CmdLineParser::isOptionTriggered(const std::string &optionName_) const {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   return this->getOption(optionName_).isTriggered();
 }
-bool CmdLineParser::isOptionSet(const std::string &optionName_, size_t index_) const {
+inline bool CmdLineParser::isOptionSet(const std::string &optionName_, size_t index_) const {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   const CmdLineParserUtils::OptionHolder* optionPtr = &this->getOption(optionName_);
   if( optionPtr->getNbExpectedVars() == 0 ) return isOptionTriggered(optionName_);
   if(optionPtr->getNbValues() > index_ ) return true;
   return false;
 }
-size_t CmdLineParser::getNbValueSet(const std::string &optionName_) const {
+inline size_t CmdLineParser::getNbValueSet(const std::string &optionName_) const {
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
   return this->getOption(optionName_).getNbValues();
 }
-const std::string &CmdLineParser::getCommandName() const {
+inline const std::string &CmdLineParser::getCommandName() const {
   return _commandName_;
 }
 
@@ -426,16 +426,16 @@ inline std::string CmdLineParser::getOptionVal(const std::string& optionName_, c
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
 // Setup
-void CmdLineParser::addYamlOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_) {
+inline void CmdLineParser::addYamlOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_) {
   this->addOption(optionName_, commandLineCallStrList_, description_, 1);
   _yamlConfigs_.emplace_back(optionName_);
 }
-void CmdLineParser::setEnableYamlOptionAdding(bool enableYamlOptionAdding_){
+inline void CmdLineParser::setEnableYamlOptionAdding(bool enableYamlOptionAdding_){
   _enableYamlOptionAdding_ = enableYamlOptionAdding_;
 }
 
 // Init
-void CmdLineParser::parseYamlFile(const std::string &yamlFilePath_){
+inline void CmdLineParser::parseYamlFile(const std::string &yamlFilePath_){
   if( _isInitialized_ ){
     throw std::logic_error("CmdLineParser::parseYamlFile can't be called while already initialized.");
   }
@@ -461,7 +461,7 @@ void CmdLineParser::parseYamlFile(const std::string &yamlFilePath_){
 }
 
 // Misc
-YAML::Node CmdLineParser::dumpConfigAsYamlNode() {
+inline YAML::Node CmdLineParser::dumpConfigAsYamlNode() {
   YAML::Node yamlNode;
   for( const auto& option : _optionsList_ ){
     if( option.isTriggered() ){ // only taking into account explicit options
@@ -481,10 +481,10 @@ YAML::Node CmdLineParser::dumpConfigAsYamlNode() {
   } // option
   return yamlNode;
 }
-std::string CmdLineParser::dumpConfigAsYamlStr() {
+inline std::string CmdLineParser::dumpConfigAsYamlStr() {
   return YAML::Dump(this->dumpConfigAsYamlNode());
 }
-std::string CmdLineParser::dumpConfigAsJsonStr(){
+inline std::string CmdLineParser::dumpConfigAsJsonStr(){
   YAML::Emitter emitter;
   emitter << YAML::DoubleQuoted << YAML::Flow << YAML::BeginSeq << this->dumpConfigAsYamlNode();
   if( emitter.c_str() == nullptr ) return "";
@@ -492,7 +492,7 @@ std::string CmdLineParser::dumpConfigAsJsonStr(){
 }
 #endif
 
-bool CmdLineParser::checkOptionGNU(const std::vector<std::string>& commandLineCallStrList_, const int& nbExpectedVars_) {
+inline bool CmdLineParser::checkOptionGNU(const std::vector<std::string>& commandLineCallStrList_, const int& nbExpectedVars_) {
   if (nbExpectedVars_ > 1)
     throw std::logic_error("Unix GNU standard doesn't allow more then 1 option. Option: " + commandLineCallStrList_[0]);
   for (const auto& option : commandLineCallStrList_){
@@ -511,7 +511,7 @@ bool CmdLineParser::checkOptionGNU(const std::vector<std::string>& commandLineCa
 
 
 // Protected:
-int CmdLineParser::getOptionIndex(const std::string& name_) const {
+inline int CmdLineParser::getOptionIndex(const std::string& name_) const {
   for( size_t iOption = 0 ; iOption < _optionsList_.size() ; iOption++ ){
     if( _optionsList_.at(iOption).getName() == name_ ){
       return int(iOption);
@@ -519,7 +519,7 @@ int CmdLineParser::getOptionIndex(const std::string& name_) const {
   }
   return -1;
 }
-CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionPtr(const std::string& optionCallStr_){
+inline CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionPtr(const std::string& optionCallStr_){
   for( auto& option : _optionsList_ ){
     if( option.getName().empty() ){ continue; } // skip dummy options
     // loop over the possible calls
@@ -530,7 +530,7 @@ CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionPtr(const std::strin
   }
   return nullptr; // default return -> no call
 }
-CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionByNamePtr(const std::string& optionName_){
+inline CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionByNamePtr(const std::string& optionName_){
   CmdLineParserUtils::OptionHolder* optionPtr = nullptr;
   for( auto& option : _optionsList_ ){
     if(option.getName() == optionName_ ){
@@ -542,7 +542,7 @@ CmdLineParserUtils::OptionHolder* CmdLineParser::fetchOptionByNamePtr(const std:
 }
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
-void CmdLineParser::parseYamlConfigFiles(){
+inline void CmdLineParser::parseYamlConfigFiles(){
 
   for( auto& yamlOptionName : _yamlConfigs_ ){
 

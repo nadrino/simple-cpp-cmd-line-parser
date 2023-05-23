@@ -77,16 +77,16 @@ public:
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
   // Setup
-  void addYamlOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
-  void setEnableYamlOptionAdding(bool enableYamlOptionAdding_); // allow non-set options to be defined by YAML file while reading it
+  inline void addYamlOption(const std::string &optionName_, const std::vector<std::string> &commandLineCallStrList_, const std::string &description_ = "");
+  inline void setEnableYamlOptionAdding(bool enableYamlOptionAdding_); // allow non-set options to be defined by YAML file while reading it
 
   // Init
-  void parseYamlFile(const std::string &yamlFilePath_);
+  inline void parseYamlFile(const std::string &yamlFilePath_);
 
   // Misc
-  YAML::Node dumpConfigAsYamlNode();
-  std::string dumpConfigAsYamlStr();
-  std::string dumpConfigAsJsonStr();
+  inline YAML::Node dumpConfigAsYamlNode();
+  inline std::string dumpConfigAsYamlStr();
+  inline std::string dumpConfigAsJsonStr();
 #endif
 
   /**
