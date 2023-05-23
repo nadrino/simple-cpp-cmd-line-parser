@@ -15,10 +15,10 @@
 #define CMDLINEPARSER_DEFAULT_UNIXGNU_MODE false
 #endif
 
-#include "string"
-#include "vector"
-#include "map"
-#include "sstream"
+#include <map>
+#include <string>
+#include <vector>
+#include <sstream>
 
 #ifdef CMDLINEPARSER_YAML_CPP_ENABLED
 #include "yaml-cpp/yaml.h"
