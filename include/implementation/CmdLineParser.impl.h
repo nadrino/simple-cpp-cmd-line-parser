@@ -250,10 +250,10 @@ inline std::string CmdLineParser::getConfigSummary() const{
   for( const auto& option : _optionsList_ ){
     if( not ss.str().empty() ) ss << std::endl;
     bufStr = option.getSummary();
-    if( bufStr.empty() ){
-      // dummy option -> print a separator
+    if( bufStr.empty() and not option.getDescription().empty() ){
+      // dummy option -> print a separator with the provided description
       ss << "────────────";
-      if( not option.getDescription().empty() ) ss << " " << option.getDescription() << " ";
+      ss << " " << option.getDescription() << " ";
       ss << "────────────";
     }
     else{
