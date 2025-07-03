@@ -389,7 +389,7 @@ template<typename T> auto CmdLineParser::getOptionVal(const std::string &optionN
                               + " values are set. You have to provide the index of the one you want.");
     }
   } // index_ == -1
-  return optionPtr->template getValue<T>(index_);
+  return optionPtr->getValue<T>(index_);
 }
 template<typename T> auto CmdLineParser::getOptionVal(const std::string& optionName_, const T& defaultValue_, int index_) const -> T{
   if( not _isInitialized_ ){ throw std::logic_error("Can't call isOptionTriggered while parseCmdLine has not already been called"); }
@@ -398,7 +398,7 @@ template<typename T> auto CmdLineParser::getOptionVal(const std::string& optionN
   if( optionPtr->isTriggered() ){
     if( optionPtr->getNbValues() == 0 and optionPtr->isAllowEmptyValue() ){ return defaultValue_; }
     try{
-      return this->template getOptionVal<T>(optionName_,index_);
+      return this->getOptionVal<T>(optionName_,index_);
     }
     catch ( std::logic_error& e ){
       // Catch only logic errors. runtime error will still show
@@ -414,7 +414,7 @@ template<typename T> auto CmdLineParser::getOptionValList(const std::string &opt
   std::vector<T> outputList;
   const CmdLineParserUtils::OptionHolder* optionPtr = &this->getOption(optionName_);
   for(size_t iIndex = 0 ; iIndex < optionPtr->getNbValues() ; iIndex++ ){
-    outputList.template emplace_back(optionPtr->template getValue<T>(iIndex));
+    outputList.emplace_back(optionPtr->getValue<T>(iIndex));
   }
   return outputList;
 }
